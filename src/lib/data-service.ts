@@ -406,6 +406,59 @@ export const dataService = {
     }
   },
 
+  async saveInvoice(invoice: MockInvoice): Promise<MockInvoice> {
+    const list = getLocal<MockInvoice>(KEYS.INVOICES, mockInvoices);
+    const index = list.findIndex(i => i.id === invoice.id);
+    if (index > -1) {
+      list[index] = invoice;
+    } else {
+      list.unshift(invoice);
+    }
+    saveLocal(KEYS.INVOICES, list);
+
+    if (this.isOnline()) {
+      try {
+        const clients = await this.getClients();
+        const client = clients.find(c => c.companyName.toLowerCase() === invoice.clientName.toLowerCase());
+        const clientId = client ? client.id : null;
+
+        const payload = {
+          client_id: clientId,
+          invoice_number: invoice.invoiceNumber,
+          amount: invoice.amount,
+          due_date: invoice.dueDate,
+          status: invoice.status,
+          paid_at: invoice.paidAt || null,
+        };
+
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(invoice.id);
+        if (isUUID) {
+          await supabase.from('invoices').update(payload).eq('id', invoice.id);
+        } else {
+          await supabase.from('invoices').insert([payload]);
+        }
+      } catch (err) {
+        console.warn('Supabase saveInvoice failed, saved locally only', err);
+      }
+    }
+    return invoice;
+  },
+
+  async removeInvoice(id: string): Promise<boolean> {
+    const list = getLocal<MockInvoice>(KEYS.INVOICES, mockInvoices);
+    const filtered = list.filter(i => i.id !== id);
+    saveLocal(KEYS.INVOICES, filtered);
+
+    if (this.isOnline()) {
+      try {
+        await supabase.from('invoices').delete().eq('id', id);
+      } catch (err) {
+        console.warn('Supabase removeInvoice failed, removed locally only', err);
+      }
+    }
+    return true;
+  },
+
   // ─── EMPLOYEES ──────────────────────────────────────────────────────
   async getEmployees(): Promise<MockEmployee[]> {
     if (!this.isOnline()) {
