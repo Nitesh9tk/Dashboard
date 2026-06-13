@@ -8,7 +8,7 @@ import {
   Search, Plus, Mail, Phone, Calendar, X, User,
   TrendingUp, AlertCircle, CheckCircle, Clock,
   Building2, IndianRupee, Trash2, ChevronRight,
-  Edit2, ExternalLink,
+  Edit2, ExternalLink, Download,
 } from 'lucide-react';
 
 // ─── Colour helpers ──────────────────────────────────────────────────
@@ -262,6 +262,35 @@ export default function ClientsCRM() {
   const totalReceived = clients.reduce((sum, c) => sum + c.received, 0);
   const totalBalance = clients.reduce((sum, c) => sum + c.balance, 0);
 
+  const handleExport = () => {
+    const headers = ['Company Name', 'Contact Person', 'Email', 'Phone', 'Monthly Fee (INR)', 'Contract Start', 'Contract End', 'Status', 'Contract Type'];
+    const rows = filteredClients.map(c => [
+      c.companyName,
+      c.contactPerson,
+      c.email,
+      c.phone || '',
+      c.monthlyFee.toString(),
+      c.contractStart || '',
+      c.contractEnd || '',
+      c.status,
+      c.contractType
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'clients_crm_report.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const FILTERS = ['all', 'active', 'paused', 'inactive', 'completed'] as const;
 
   return (
@@ -275,12 +304,23 @@ export default function ClientsCRM() {
             Manage clients, contracts, and billing. Click any card to view details.
           </p>
         </div>
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white gradient-blue shadow-sm hover:opacity-90 transition-all"
-        >
-          <Plus className="h-4 w-4" /> Add Client
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer"
+            style={{ border: '1px solid var(--border-primary)', color: 'var(--text-secondary)', background: 'var(--bg-secondary)' }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-tertiary)'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-secondary)'}
+          >
+            <Download className="h-4 w-4" /> Export CSV
+          </button>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white gradient-blue shadow-sm hover:opacity-90 transition-all"
+          >
+            <Plus className="h-4 w-4" /> Add Client
+          </button>
+        </div>
       </div>
 
       {/* ── Summary KPIs ── */}

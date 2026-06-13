@@ -56,6 +56,60 @@ export default function FinancePage() {
   const netProfit = mrr - totalExpenses;
   const margin = mrr > 0 ? Math.round((netProfit / mrr) * 100) : 0;
 
+  const handleExport = () => {
+    let headers: string[] = [];
+    let rows: string[][] = [];
+    let filename = '';
+
+    if (activeTab === 'invoices') {
+      filename = 'invoices_report.csv';
+      headers = ['Invoice Number', 'Client Name', 'Amount (INR)', 'Due Date', 'Status'];
+      rows = invoices.map(inv => [
+        inv.invoiceNumber,
+        inv.clientName,
+        inv.amount.toString(),
+        inv.dueDate,
+        inv.status
+      ]);
+    } else if (activeTab === 'expenses') {
+      filename = 'expenses_report.csv';
+      headers = ['Type', 'Item/Employee Name', 'Details/Role', 'Amount (INR)'];
+      expenses.forEach(exp => {
+        rows.push(['Operational Expense', exp.name, exp.category, exp.amount.toString()]);
+      });
+      employees.forEach(emp => {
+        rows.push(['Salary', emp.name, emp.position, emp.salary.toString()]);
+      });
+    } else {
+      filename = 'pl_overview_report.csv';
+      headers = ['Metric', 'Amount (INR) / Value'];
+      rows = [
+        ['Monthly Recurring Revenue (MRR)', mrr.toString()],
+        ['Total Received', totalReceived.toString()],
+        ['Outstanding Balance', totalBalance.toString()],
+        ['Team Salaries Bill', totalSalary.toString()],
+        ['Operational Expenses', totalOpex.toString()],
+        ['Total Expenses', totalExpenses.toString()],
+        ['Net Profit', netProfit.toString()],
+        ['Net Margin (%)', margin.toString() + '%']
+      ];
+    }
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
   const revenueData = [5000, 20000, 33000, 66000, 77000, mrr];
 
@@ -72,7 +126,7 @@ export default function FinancePage() {
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Finance Hub</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>Revenue, expenses, invoices and P&L at a glance.</p>
         </div>
-        <button className="ripple-container flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer"
+        <button onClick={handleExport} className="ripple-container flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer"
           style={{ border: '1px solid var(--border-primary)', color: 'var(--text-secondary)', background: 'var(--bg-secondary)' }}
           onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-tertiary)'}
           onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-secondary)'}>
