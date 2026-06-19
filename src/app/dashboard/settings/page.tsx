@@ -167,7 +167,7 @@ export default function SettingsPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>Settings</h1>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>Settings</h1>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Manage your account, organization, and preferences</p>
       </div>
 
@@ -200,7 +200,7 @@ export default function SettingsPage() {
         <div className="card animate-fade-up" style={{ background: 'var(--bg-card)', flex: 1, padding: 28 }}>
           {activeTab === 'profile' && (
             <div>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Profile Settings</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Profile Settings</h2>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 24 }}>Manage your personal information</p>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
@@ -208,10 +208,10 @@ export default function SettingsPage() {
                   width: 64, height: 64, borderRadius: '50%',
                   background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', fontSize: 22, fontWeight: 800,
+                  color: 'white', fontSize: 22, fontWeight: 700,
                 }}>{firstName ? firstName[0].toUpperCase() : ''}{lastName ? lastName[0].toUpperCase() : ''}</div>
                 <div>
-                  <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{firstName} {lastName}</p>
+                  <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{firstName} {lastName}</p>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{role} • {orgName}</p>
                 </div>
               </div>
@@ -224,14 +224,14 @@ export default function SettingsPage() {
                   { label: 'Phone Number', value: phone, setter: setPhone },
                 ].map(field => (
                   <div key={field.label}>
-                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>{field.label}</label>
+                    <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>{field.label}</label>
                     <input className="input-field" value={field.value} onChange={e => field.setter(e.target.value)} />
                   </div>
                 ))}
               </div>
 
               <div style={{ marginTop: 16 }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Role</label>
+                <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Role</label>
                 <input className="input-field" value={role} disabled style={{ opacity: 0.6 }} />
               </div>
 
@@ -243,7 +243,7 @@ export default function SettingsPage() {
 
           {activeTab === 'organization' && (
             <div>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Organization</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Organization</h2>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 24 }}>Manage your company details</p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -253,7 +253,7 @@ export default function SettingsPage() {
                   { label: 'Website', value: orgWebsite, setter: setOrgWebsite, icon: Globe },
                 ].map(field => (
                   <div key={field.label}>
-                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>{field.label}</label>
+                    <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>{field.label}</label>
                     <input className="input-field" value={field.value} onChange={e => field.setter(e.target.value)} />
                   </div>
                 ))}
@@ -267,10 +267,10 @@ export default function SettingsPage() {
 
           {activeTab === 'appearance' && (
             <div>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Appearance</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Appearance</h2>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 24 }}>Customize the look and feel</p>
 
-              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 12 }}>Theme</p>
+              <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 12 }}>Theme</p>
               <div style={{ display: 'flex', gap: 12 }}>
                 {[
                   { key: 'light' as const, label: 'Light', icon: Sun },
@@ -293,7 +293,7 @@ export default function SettingsPage() {
                       }}
                     >
                       <Icon style={{ width: 24, height: 24 }} />
-                      <span style={{ fontSize: 12, fontWeight: 600 }}>{t.label}</span>
+                      <span style={{ fontSize: 12, fontWeight: 500 }}>{t.label}</span>
                     </button>
                   );
                 })}
@@ -303,7 +303,7 @@ export default function SettingsPage() {
 
           {activeTab === 'notifications' && (
             <div>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Notifications</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Notifications</h2>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 24 }}>Control what notifications you receive</p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -319,7 +319,7 @@ export default function SettingsPage() {
                     borderBottom: idx < 3 ? '1px solid var(--border-secondary)' : 'none',
                   }}>
                     <div>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.label}</p>
+                      <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{item.label}</p>
                       <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{item.desc}</p>
                     </div>
                     <Toggle checked={item.checked} onChange={item.setter} />
@@ -331,7 +331,7 @@ export default function SettingsPage() {
 
           {activeTab === 'security' && (
             <div>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Security Settings</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Security Settings</h2>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 24 }}>Protect your workspace account</p>
 
               {!isChangingPassword ? (
@@ -357,7 +357,7 @@ export default function SettingsPage() {
                             <Icon style={{ width: 16, height: 16, color: 'var(--text-secondary)' }} />
                           </div>
                           <div>
-                            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.label}</p>
+                            <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{item.label}</p>
                             <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{item.desc}</p>
                           </div>
                         </div>
@@ -379,15 +379,15 @@ export default function SettingsPage() {
                     </div>
                   )}
                   <div>
-                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Old Password</label>
+                    <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Old Password</label>
                     <input type="password" required className="input-field" value={oldPassword} onChange={e => setOldPassword(e.target.value)} />
                   </div>
                   <div>
-                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>New Password</label>
+                    <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>New Password</label>
                     <input type="password" required className="input-field" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
                   </div>
                   <div>
-                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Confirm New Password</label>
+                    <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Confirm New Password</label>
                     <input type="password" required className="input-field" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
                   </div>
                   <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
@@ -401,7 +401,7 @@ export default function SettingsPage() {
 
           {activeTab === 'data' && (
             <div>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Data & Backup</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Data & Backup</h2>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 24 }}>Export and manage your data</p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -414,7 +414,7 @@ export default function SettingsPage() {
                       <Download style={{ width: 18, height: 18, color: 'var(--accent)' }} />
                     </div>
                     <div>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Export All Data</p>
+                      <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>Export All Data</p>
                       <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Download a JSON backup of all your data</p>
                     </div>
                   </div>
@@ -433,7 +433,7 @@ export default function SettingsPage() {
                       <AlertTriangle style={{ width: 18, height: 18, color: 'var(--danger)' }} />
                     </div>
                     <div>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--danger)' }}>Reset All Data</p>
+                      <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--danger)' }}>Reset All Data</p>
                       <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Clear all local storage data. This cannot be undone.</p>
                     </div>
                   </div>

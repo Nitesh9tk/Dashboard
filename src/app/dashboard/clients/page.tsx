@@ -125,7 +125,7 @@ function ClientDetailPanel({
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border-primary">
           <div className="flex items-center gap-3">
-            <div className={`h-11 w-11 rounded-xl ${grad} flex items-center justify-center text-white font-extrabold text-sm shadow-sm`}>
+            <div className={`h-11 w-11 rounded-xl ${grad} flex items-center justify-center text-white font-semibold text-sm shadow-sm`}>
               {client.companyName.substring(0, 2).toUpperCase()}
             </div>
             <div>
@@ -259,7 +259,7 @@ function ClientDetailPanel({
                   ].map((x, i) => (
                     <div key={i} className="p-3 bg-bg-secondary rounded-lg border border-border-primary">
                       <span className="text-[10px] text-text-muted font-medium block">{x.label}</span>
-                      <span className="text-sm font-extrabold block mt-0.5" style={{ color: x.color }}>{x.value}</span>
+                      <span className="text-sm font-semibold block mt-0.5" style={{ color: x.color }}>{x.value}</span>
                     </div>
                   ))}
                 </div>
@@ -355,7 +355,7 @@ function ClientDetailPanel({
                       </div>
                       <p className="text-[10px] text-text-secondary">Due: {inv.dueDate}</p>
                     </div>
-                    <span className="text-sm font-extrabold text-text-primary">₹{inv.amount.toLocaleString('en-IN')}</span>
+                    <span className="text-sm font-semibold text-text-primary">₹{inv.amount.toLocaleString('en-IN')}</span>
                   </div>
                 ))
               ) : (
@@ -590,7 +590,7 @@ export default function ClientsCRM() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-primary pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-text-primary">CRM Connections</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-text-primary">CRM Connections</h1>
           <p className="text-text-secondary text-sm mt-1">Manage active contracts, track client health indicators, and oversee accounts billing.</p>
         </div>
         <button
@@ -614,8 +614,8 @@ export default function ClientsCRM() {
           return (
             <div key={i} className="card p-4 flex items-center justify-between bg-bg-secondary">
               <div>
-                <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block">{stat.label}</span>
-                <span className="text-lg font-extrabold text-text-primary block mt-1">{stat.value}</span>
+                <span className="text-[10px] text-text-muted font-semibold uppercase tracking-wider block">{stat.label}</span>
+                <span className="text-lg font-bold text-text-primary block mt-1">{stat.value}</span>
                 <span className="text-[10px] text-text-secondary block mt-0.5">{stat.sub}</span>
               </div>
               <div className="p-2.5 rounded-lg flex items-center justify-center shrink-0" style={{ background: stat.color + '15', color: stat.color }}>
@@ -800,7 +800,7 @@ export default function ClientsCRM() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <div className={`h-11 w-11 rounded-xl ${grad} flex items-center justify-center text-white font-extrabold text-sm shadow-sm`}>
+                      <div className={`h-11 w-11 rounded-xl ${grad} flex items-center justify-center text-white font-semibold text-sm shadow-sm`}>
                         {client.companyName.substring(0, 2).toUpperCase()}
                       </div>
                       <div className="min-w-0">
@@ -828,12 +828,12 @@ export default function ClientsCRM() {
                     {/* Billing Stats */}
                     <div className="flex justify-between items-center text-xs">
                       <div>
-                        <span className="text-[9px] text-text-muted font-bold block uppercase">Monthly Retainer</span>
-                        <span className="font-extrabold text-text-primary">₹{client.monthlyFee.toLocaleString('en-IN')}</span>
+                        <span className="text-[9px] text-text-muted font-semibold block uppercase">Monthly Retainer</span>
+                        <span className="font-semibold text-text-primary">₹{client.monthlyFee.toLocaleString('en-IN')}</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[9px] text-text-muted font-bold block uppercase">Collections</span>
-                        <span className="font-extrabold text-text-primary">₹{client.received.toLocaleString('en-IN')}</span>
+                        <span className="text-[9px] text-text-muted font-semibold block uppercase">Collections</span>
+                        <span className="font-semibold text-text-primary">₹{client.received.toLocaleString('en-IN')}</span>
                       </div>
                     </div>
 
@@ -866,9 +866,9 @@ export default function ClientsCRM() {
                       {/* Custom Tags */}
                       <div className="flex gap-1">
                         {client.monthlyFee >= 30000 && (
-                          <span className="text-[8px] font-extrabold tracking-wider uppercase bg-brand-primary/10 text-brand-primary px-1.5 py-0.5 rounded">VIP</span>
+                          <span className="text-[8px] font-semibold tracking-wider uppercase bg-brand-primary/10 text-brand-primary px-1.5 py-0.5 rounded">VIP</span>
                         )}
-                        <span className="text-[8px] font-extrabold tracking-wider uppercase bg-bg-secondary text-text-secondary border border-border-primary px-1.5 py-0.5 rounded capitalize">
+                        <span className="text-[8px] font-semibold tracking-wider uppercase bg-bg-secondary text-text-secondary border border-border-primary px-1.5 py-0.5 rounded capitalize">
                           {client.contractType.replace('_', ' ')}
                         </span>
                       </div>
@@ -931,7 +931,7 @@ export default function ClientsCRM() {
                         {/* Client details */}
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-3">
-                            <div className={`h-8 w-8 rounded-lg ${GRADIENTS[index % GRADIENTS.length]} flex items-center justify-center text-white font-extrabold text-[11px] shrink-0`}>
+                            <div className={`h-8 w-8 rounded-lg ${GRADIENTS[index % GRADIENTS.length]} flex items-center justify-center text-white font-semibold text-[11px] shrink-0`}>
                               {client.companyName.substring(0, 2).toUpperCase()}
                             </div>
                             <div className="min-w-0">
@@ -1026,7 +1026,7 @@ export default function ClientsCRM() {
             {/* Header */}
             <div className="flex justify-between items-center pb-4 border-b border-border-primary mb-5">
               <div>
-                <h3 className="font-extrabold text-base text-text-primary">Onboard Enterprise Client</h3>
+                <h3 className="font-semibold text-base text-text-primary">Onboard Enterprise Client</h3>
                 <p className="text-xs text-text-secondary mt-0.5">Initialize contract agreements, tax details, and billing parameters.</p>
               </div>
               <button

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authHelper, UserSession } from '@/lib/auth';
@@ -20,40 +20,453 @@ import {
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════
-// KPI Card — Clean, dark-mode compatible
+// Revenue Chart — Interactive with Liquid Glass Tooltip
 // ═══════════════════════════════════════════════════════════════
-function KpiCard({ label, value, sub, icon: Icon, iconBg, trend, trendUp }: {
+const CHART_POINTS = [
+  { x: 15,  y: 130, date: '1 Jun',  value: 22000  },
+  { x: 110, y: 100, date: '6 Jun',  value: 38000  },
+  { x: 205, y: 115, date: '11 Jun', value: 31000  },
+  { x: 300, y: 50,  date: '16 Jun', value: 65400  },
+  { x: 395, y: 80,  date: '21 Jun', value: 48000  },
+  { x: 485, y: 70,  date: '23 Jun', value: 52000  },
+];
+
+function RevenueChart({ totalRevenue: _totalRevenue }: { totalRevenue: number }) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+    if (!svgRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const svgX = ((e.clientX - rect.left) / rect.width) * 500;
+
+    // Find nearest point based purely on X coordinate for horizontal snapping
+    let nearest = -1;
+    let minDist = Infinity;
+    CHART_POINTS.forEach((pt, i) => {
+      const dist = Math.abs(pt.x - svgX);
+      if (dist < minDist) {
+        minDist = dist;
+        nearest = i;
+      }
+    });
+
+    if (minDist < 60) {
+      setHovered(nearest);
+    } else {
+      setHovered(null);
+    }
+  }, []);
+
+  const activePoint = hovered !== null && hovered >= 0 ? CHART_POINTS[hovered] : null;
+  const leftPercent = activePoint ? (activePoint.x / 500) * 100 : 0;
+  const topPercent = activePoint ? (activePoint.y / 160) * 100 : 0;
+
+  return (
+    <div style={{ height: 200, position: 'relative' }}>
+      <svg
+        ref={svgRef}
+        viewBox="0 0 500 160"
+        style={{ width: '100%', height: '100%', cursor: 'crosshair', overflow: 'visible' }}
+        preserveAspectRatio="none"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setHovered(null)}
+      >
+        <defs>
+          <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.00" />
+          </linearGradient>
+          <linearGradient id="verticalGlowGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0" />
+            <stop offset="30%" stopColor="#3b82f6" stopOpacity="0.5" />
+            <stop offset="70%" stopColor="#3b82f6" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+          </linearGradient>
+          <filter id="glowFilter">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        {/* Grid lines */}
+        {[40, 80, 120].map(y => (
+          <line key={y} x1="0" y1={y} x2="500" y2={y}
+            stroke="var(--border-primary)" strokeWidth="1" strokeDasharray="4,6" />
+        ))}
+
+        {/* Area fill */}
+        <path
+          d="M 15 130 C 60 120, 80 95, 110 100 C 140 105, 170 125, 205 115 C 240 105, 270 50, 300 50 C 330 50, 360 85, 395 80 C 430 75, 460 70, 485 70 L 485 160 L 15 160 Z"
+          fill="url(#revenueGrad)"
+        />
+
+        {/* Ambient neon tube glow line */}
+        <path
+          d="M 15 130 C 60 120, 80 95, 110 100 C 140 105, 170 125, 205 115 C 240 105, 270 50, 300 50 C 330 50, 360 85, 395 80 C 430 75, 460 70, 485 70"
+          fill="none"
+          stroke="#3b82f6"
+          strokeWidth="6"
+          strokeLinecap="round"
+          opacity="0.3"
+          filter="url(#glowFilter)"
+        />
+
+        {/* Main line */}
+        <path
+          d="M 15 130 C 60 120, 80 95, 110 100 C 140 105, 170 125, 205 115 C 240 105, 270 50, 300 50 C 330 50, 360 85, 395 80 C 430 75, 460 70, 485 70"
+          fill="none"
+          stroke="#3b82f6"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          filter="url(#glowFilter)"
+        />
+
+        {/* Vertical guideline on hover */}
+        {activePoint && (
+          <line
+            x1={activePoint.x} y1="0"
+            x2={activePoint.x} y2="160"
+            stroke="url(#verticalGlowGrad)"
+            strokeWidth="1.5"
+          />
+        )}
+
+        {/* Data points */}
+        {CHART_POINTS.map((pt, i) => (
+          <g key={i}>
+            <circle
+              cx={pt.x} cy={pt.y} r="20"
+              fill="transparent"
+              style={{ cursor: 'pointer' }}
+            />
+            <circle
+              cx={pt.x} cy={pt.y}
+              r={hovered === i ? 6.5 : 4}
+              fill={hovered === i ? '#3b82f6' : 'var(--bg-card)'}
+              stroke="#3b82f6"
+              strokeWidth="2.5"
+              style={{ transition: 'r 150ms ease, fill 150ms ease' }}
+            />
+            {hovered === i && (
+              <g>
+                <circle cx={pt.x} cy={pt.y} r="10"
+                  fill="none" stroke="#3b82f6" strokeWidth="2" strokeOpacity="0.6"
+                />
+                <circle cx={pt.x} cy={pt.y} r="14"
+                  fill="#3b82f6" fillOpacity="0.15"
+                />
+              </g>
+            )}
+          </g>
+        ))}
+      </svg>
+
+      {/* X-axis labels */}
+      <div style={{ position: 'absolute', bottom: -4, left: 0, right: 0, display: 'flex', justifyContent: 'space-between', padding: '0 4px' }}>
+        {CHART_POINTS.map(pt => (
+          <span key={pt.date} style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-muted)' }}>{pt.date}</span>
+        ))}
+      </div>
+
+      {/* Floating HTML Liquid Glass Tooltip */}
+      {activePoint && (
+        <div
+          style={{
+            position: 'absolute',
+            left: `${leftPercent}%`,
+            top: `${topPercent - 8}%`,
+            transform: 'translate(-50%, -100%)',
+            pointerEvents: 'none',
+            zIndex: 50,
+            background: 'var(--bg-card)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 12,
+            padding: '10px 14px',
+            boxShadow: '0 8px 32px rgba(67, 97, 238, 0.25), 0 0 0 1px rgba(255,255,255,0.05)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            minWidth: 125,
+            animation: 'scaleIn 150ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            transition: 'left 150ms ease, top 150ms ease',
+          }}
+        >
+          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            {activePoint.date}
+          </span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+            ₹{activePoint.value.toLocaleString('en-IN')}
+          </span>
+          <div style={{
+            fontSize: 9,
+            fontWeight: 600,
+            color: 'var(--success)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            marginTop: 2
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)' }} />
+            Verified Revenue
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KPI Card — Clean, support highlight and dot grids
+// ═══════════════════════════════════════════════════════════════
+function KpiCard({ label, value, sub, icon: Icon, iconBg, trend, trendUp, highlighted = false }: {
   label: string; value: string; sub?: string;
   icon: React.ElementType; iconBg: string;
   trend?: string; trendUp?: boolean;
+  highlighted?: boolean;
 }) {
+  const cardBg = highlighted
+    ? 'linear-gradient(135deg, #4361ee 0%, #7b2fff 100%)'
+    : 'var(--bg-card)';
+  
+  const textColor = highlighted ? '#ffffff' : 'var(--text-primary)';
+  const labelColor = highlighted ? '#e0e7ff' : 'var(--text-muted)';
+  const subColor = highlighted ? '#c4d0ff' : 'var(--text-muted)';
+  
   return (
-    <div className="card card-interactive" style={{ padding: 20, background: 'var(--bg-card)', minHeight: 130 }}>
+    <div className={`card card-interactive ${!highlighted ? 'kpi-card-dotted' : ''}`} style={{
+      padding: 22,
+      background: cardBg,
+      minHeight: 136,
+      position: 'relative',
+      overflow: 'hidden',
+      border: highlighted ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid var(--border-primary)',
+      boxShadow: highlighted ? '0 10px 30px rgba(67, 97, 238, 0.3)' : 'var(--card-shadow)',
+    }}>
+      {highlighted && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(180deg, rgba(255,255,255,0.12), transparent)', pointerEvents: 'none' }} />
+      )}
+      {!highlighted && (
+        <div style={{ position: 'absolute', top: 0, left: '15%', right: '15%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)', pointerEvents: 'none' }} />
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8 }}>{label}</p>
-          <h3 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>{value}</h3>
-          {sub && <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6, fontWeight: 500 }}>{sub}</p>}
+        <div style={{ flex: 1, zIndex: 1 }}>
+          <p style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: labelColor, marginBottom: 10 }}>{label}</p>
+          <h3 style={{ fontSize: 26, fontWeight: 700, color: textColor, lineHeight: 1, letterSpacing: '-0.02em' }}>{value}</h3>
+          {sub && <p style={{ fontSize: 11, color: subColor, marginTop: 7, fontWeight: 500 }}>{sub}</p>}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10, zIndex: 1 }}>
           {trend && (
-            <span className={trendUp ? 'badge-success' : 'badge-danger'} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-              {trendUp ? <ArrowUpRight style={{ width: 12, height: 12 }} /> : <ArrowDownRight style={{ width: 12, height: 12 }} />}
+            <span className={highlighted ? 'badge-blue' : (trendUp ? 'badge-success' : 'badge-danger')} style={{
+              fontSize: 10, padding: '3px 9px', borderRadius: 20, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 3,
+              ...(highlighted ? { background: 'rgba(255, 255, 255, 0.2)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)' } : {})
+            }}>
+              {trendUp ? <ArrowUpRight style={{ width: 11, height: 11 }} /> : <ArrowDownRight style={{ width: 11, height: 11 }} />}
               {trend}
             </span>
           )}
           <div style={{
-            width: 38, height: 38, borderRadius: 10,
-            background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 42, height: 42, borderRadius: 12,
+            background: highlighted ? 'rgba(255, 255, 255, 0.2)' : iconBg,
+            border: highlighted ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'white', flexShrink: 0,
+            boxShadow: highlighted ? 'none' : '0 4px 18px rgba(0,0,0,0.25)',
           }}>
-            <Icon style={{ width: 18, height: 18 }} />
+            <Icon style={{ width: 20, height: 20, color: '#ffffff' }} />
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+// ═══════════════════════════════════════════════════════════════
+// Customer Habits — Rounded Column bar chart
+// ═══════════════════════════════════════════════════════════════
+function CustomerHabitsChart() {
+  const data = [
+    { month: 'Jan', value: 65, amount: '₹4.2L' },
+    { month: 'Feb', value: 45, amount: '₹2.9L' },
+    { month: 'Mar', value: 85, amount: '₹5.5L' },
+    { month: 'Apr', value: 55, amount: '₹3.6L' },
+    { month: 'May', value: 75, amount: '₹4.8L' },
+    { month: 'Jun', value: 95, amount: '₹6.1L' },
+  ];
+  
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', height: 120, paddingBottom: 10, position: 'relative' }}>
+        {data.map((item, idx) => (
+          <div
+            key={item.month}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, cursor: 'pointer', position: 'relative' }}
+            onMouseEnter={() => setHoveredIdx(idx)}
+            onMouseLeave={() => setHoveredIdx(null)}
+          >
+            {/* The vertical bar track */}
+            <div style={{
+              width: 14,
+              height: 100,
+              background: 'var(--bg-tertiary)',
+              borderRadius: 20,
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              {/* Value fill */}
+              <div style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: `${item.value}%`,
+                background: 'linear-gradient(to top, #4361ee, #7b2fff)',
+                borderRadius: 20,
+                transition: 'height 800ms cubic-bezier(0.16, 1, 0.3, 1)',
+                boxShadow: '0 0 10px rgba(67, 97, 238, 0.4)',
+              }} />
+            </div>
+            
+            {/* Label */}
+            <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)' }}>{item.month}</span>
+            
+            {/* Tooltip */}
+            {hoveredIdx === idx && (
+              <div style={{
+                position: 'absolute',
+                bottom: 125,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                background: 'var(--bg-card)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid var(--border-primary)',
+                borderRadius: 10,
+                padding: '6px 10px',
+                boxShadow: '0 8px 24px rgba(67, 97, 238, 0.25)',
+                zIndex: 100,
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                animation: 'scaleIn 150ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              }}>
+                <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{item.month} Revenue</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{item.amount}</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Product Statistics — Donut Chart
+// ═══════════════════════════════════════════════════════════════
+function ProductStatisticsChart() {
+  const products = [
+    { label: 'SaaS Platform', value: 45, color: '#4361ee', amount: '₹1.8L' },
+    { label: 'Enterprise', value: 25, color: '#7b2fff', amount: '₹1.0L' },
+    { label: 'Consulting', value: 20, color: '#4cc9f0', amount: '₹80K' },
+    { label: 'Support Services', value: 10, color: '#f72585', amount: '₹40K' },
+  ];
+  
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+      <div style={{ position: 'relative', width: 100, height: 100, flexShrink: 0 }}>
+        <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+          {/* SaaS */}
+          <circle cx="18" cy="18" r="14" fill="none" stroke="#4361ee" strokeWidth="4.5" strokeDasharray="39.6 88" strokeDashoffset="0" />
+          {/* Enterprise */}
+          <circle cx="18" cy="18" r="14" fill="none" stroke="#7b2fff" strokeWidth="4.5" strokeDasharray="22 88" strokeDashoffset="-39.6" />
+          {/* Consulting */}
+          <circle cx="18" cy="18" r="14" fill="none" stroke="#4cc9f0" strokeWidth="4.5" strokeDasharray="17.6 88" strokeDashoffset="-61.6" />
+          {/* Support */}
+          <circle cx="18" cy="18" r="14" fill="none" stroke="#f72585" strokeWidth="4.5" strokeDasharray="8.8 88" strokeDashoffset="-79.2" />
+        </svg>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>₹4.0L</span>
+          <span style={{ fontSize: 7.5, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sales</span>
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 120 }}>
+        {products.map(item => (
+          <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+              <span style={{ fontSize: 10.5, fontWeight: 500, color: 'var(--text-secondary)' }}>{item.label}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)' }}>{item.value}%</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Customer Growth — Overlapping Bubble Chart
+// ═══════════════════════════════════════════════════════════════
+function CustomerGrowthChart() {
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  
+  const bubbles = [
+    { country: 'USA', flag: '🇺🇸', pct: '48%', size: 70, x: 10, y: 15, grad: 'linear-gradient(135deg, #4361ee, #7b2fff)', glow: 'rgba(67, 97, 238, 0.4)' },
+    { country: 'India', flag: '🇮🇳', pct: '32%', size: 60, x: 70, y: 50, grad: 'linear-gradient(135deg, #7b2fff, #f72585)', glow: 'rgba(123, 47, 255, 0.4)' },
+    { country: 'UK', flag: '🇬🇧', pct: '12%', size: 50, x: 125, y: 10, grad: 'linear-gradient(135deg, #4cc9f0, #4361ee)', glow: 'rgba(76, 201, 240, 0.4)' },
+    { country: 'Germany', flag: '🇩🇪', pct: '8%', size: 44, x: 170, y: 60, grad: 'linear-gradient(135deg, #f72585, #ffd166)', glow: 'rgba(247, 37, 133, 0.4)' },
+  ];
+  
+  return (
+    <div style={{ position: 'relative', height: 120, width: '100%', overflow: 'hidden' }}>
+      {bubbles.map((b, idx) => {
+        const isHovered = hoveredIdx === idx;
+        return (
+          <div
+            key={b.country}
+            onMouseEnter={() => setHoveredIdx(idx)}
+            onMouseLeave={() => setHoveredIdx(null)}
+            style={{
+              position: 'absolute',
+              left: b.x,
+              top: b.y,
+              width: b.size,
+              height: b.size,
+              borderRadius: '50%',
+              background: b.grad,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              boxShadow: isHovered ? `0 10px 24px ${b.glow}` : `0 4px 12px rgba(0,0,0,0.15)`,
+              transform: isHovered ? 'scale(1.15) translateZ(0)' : 'scale(1) translateZ(0)',
+              zIndex: isHovered ? 10 : idx,
+              cursor: 'pointer',
+              transition: 'all 300ms cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+          >
+            <span style={{ fontSize: b.size > 55 ? 16 : 12, lineHeight: 1 }}>{b.flag}</span>
+            <span style={{ fontSize: b.size > 55 ? 9 : 8, fontWeight: 600, opacity: 0.9, marginTop: 1 }}>{b.country}</span>
+            <span style={{ fontSize: b.size > 55 ? 12 : 10, fontWeight: 700, marginTop: 1 }}>{b.pct}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 
 // ═══════════════════════════════════════════════════════════════
 // Section Card Wrapper
@@ -65,24 +478,29 @@ function SectionCard({ title, subtitle, children, action, actionLabel, actionHre
 }) {
   return (
     <div className="card" style={{ background: 'var(--bg-card)', overflow: 'hidden' }}>
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-primary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{
+        padding: '16px 22px',
+        borderBottom: '1px solid var(--border-primary)',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        background: 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%)',
+      }}>
         <div>
-          <h2 style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)' }}>{title}</h2>
-          {subtitle && <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{subtitle}</p>}
+          <h2 style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>{title}</h2>
+          {subtitle && <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, fontWeight: 500 }}>{subtitle}</p>}
         </div>
         {headerRight || (
           actionHref ? (
-            <Link href={actionHref} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: 'var(--accent)', textDecoration: 'none' }}>
+            <Link href={actionHref} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: 'var(--accent)', textDecoration: 'none', opacity: 0.9 }}>
               {actionLabel || 'View All'} <ChevronRight style={{ width: 14, height: 14 }} />
             </Link>
           ) : action ? (
-            <button onClick={action} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer' }}>
+            <button onClick={action} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer' }}>
               {actionLabel} <ChevronRight style={{ width: 14, height: 14 }} />
             </button>
           ) : null
         )}
       </div>
-      <div style={{ padding: 20 }}>
+      <div style={{ padding: 22 }}>
         {children}
       </div>
     </div>
@@ -90,28 +508,47 @@ function SectionCard({ title, subtitle, children, action, actionLabel, actionHre
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Quick Action Button
+// Quick Action Button — Glassmorphism
 // ═══════════════════════════════════════════════════════════════
 function QuickAction({ icon: Icon, label, href, color }: {
   icon: React.ElementType; label: string; href: string; color: string;
 }) {
   return (
     <Link href={href} style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-      padding: '16px 10px', borderRadius: 12, textDecoration: 'none',
-      border: '1px solid var(--border-primary)', background: 'var(--bg-card)',
-      transition: 'all 150ms ease', cursor: 'pointer',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 9,
+      padding: '18px 10px', borderRadius: 16, textDecoration: 'none',
+      border: '1px solid var(--border-primary)',
+      background: 'var(--bg-card)',
+      backdropFilter: 'blur(12px)',
+      transition: 'all 180ms cubic-bezier(0.16, 1, 0.3, 1)', cursor: 'pointer',
+      position: 'relative', overflow: 'hidden',
     }}
-    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = color; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; }}
-    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-primary)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
+    onMouseEnter={e => {
+      const el = e.currentTarget as HTMLElement;
+      el.style.borderColor = color + '70';
+      el.style.transform = 'translateY(-4px) scale(1.02)';
+      el.style.boxShadow = `0 8px 28px ${color}30`;
+    }}
+    onMouseLeave={e => {
+      const el = e.currentTarget as HTMLElement;
+      el.style.borderColor = 'var(--border-primary)';
+      el.style.transform = 'translateY(0) scale(1)';
+      el.style.boxShadow = 'none';
+    }}
     >
-      <div style={{ width: 36, height: 36, borderRadius: 10, background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Icon style={{ width: 18, height: 18, color }} />
+      <div style={{
+        width: 40, height: 40, borderRadius: 12,
+        background: `linear-gradient(135deg, ${color}22, ${color}38)`,
+        border: `1px solid ${color}30`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Icon style={{ width: 19, height: 19, color }} />
       </div>
-      <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}>{label}</span>
+      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '0.01em' }}>{label}</span>
     </Link>
   );
 }
+
 
 // ═══════════════════════════════════════════════════════════════
 // Main Dashboard
@@ -196,12 +633,12 @@ export default function CEODashboard() {
   // ═══════════════════════════════════════════════════════════════
   const renderFounderDashboard = () => {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div className="ios-transition" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
         {/* ── Welcome Banner ── */}
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
           <div>
-            <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2 }}>
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
               Good morning, {session.firstName}! 👋
             </h1>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4, fontWeight: 500 }}>
@@ -244,98 +681,63 @@ export default function CEODashboard() {
         )}
 
         {/* ── KPI Cards ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
-          <KpiCard label="Total Revenue" value={`₹${totalRevenue.toLocaleString('en-IN')}`} sub="Monthly recurring" icon={IndianRupee} iconBg="linear-gradient(135deg, #3b82f6, #6366f1)" trend="+24%" trendUp />
-          <KpiCard label="Cash Received" value={`₹${totalReceived.toLocaleString('en-IN')}`} sub="Collections this month" icon={Download} iconBg="linear-gradient(135deg, #10b981, #059669)" trend="+18%" trendUp />
-          <KpiCard label="Net Profit" value={`₹${netProfit.toLocaleString('en-IN')}`} sub="After all expenses" icon={TrendingUp} iconBg="linear-gradient(135deg, #8b5cf6, #6366f1)" trend={netProfit > 0 ? '+32%' : '-5%'} trendUp={netProfit > 0} />
-          <KpiCard label="Active Clients" value={`${activeClients.length}`} sub={`${clients.length} total clients`} icon={Users} iconBg="linear-gradient(135deg, #f59e0b, #d97706)" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <KpiCard label="Total Revenue" value={`₹${totalRevenue.toLocaleString('en-IN')}`} sub="Monthly recurring" icon={IndianRupee} iconBg="linear-gradient(135deg, #4361ee, #7b2fff)" trend="+24%" trendUp highlighted />
+          <KpiCard label="Cash Received" value={`₹${totalReceived.toLocaleString('en-IN')}`} sub="Collections this month" icon={Download} iconBg="linear-gradient(135deg, #06d6a0, #059669)" trend="+18%" trendUp />
+          <KpiCard label="Net Profit" value={`₹${netProfit.toLocaleString('en-IN')}`} sub="After all expenses" icon={TrendingUp} iconBg="linear-gradient(135deg, #7b2fff, #f72585)" trend={netProfit > 0 ? '+32%' : '-5%'} trendUp={netProfit > 0} />
+          <KpiCard label="Active Clients" value={`${activeClients.length}`} sub={`${clients.length} total clients`} icon={Users} iconBg="linear-gradient(135deg, #ffd166, #f59e0b)" />
         </div>
 
         {/* ── Quick Actions ── */}
         <div>
-          <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Quick Actions</p>
+          <p className="section-title" style={{ marginBottom: 12 }}>Quick Actions</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 10 }}>
-            <QuickAction icon={UserPlus} label="Add Client" href="/dashboard/clients" color="#3b82f6" />
-            <QuickAction icon={Receipt} label="Create Invoice" href="/dashboard/finance" color="#10b981" />
-            <QuickAction icon={CalendarPlus} label="Schedule Meet" href="/dashboard/meetings" color="#8b5cf6" />
-            <QuickAction icon={Zap} label="Add Lead" href="/dashboard/leads" color="#f59e0b" />
-            <QuickAction icon={FileText} label="View Reports" href="/dashboard/reports" color="#06b6d4" />
-            <QuickAction icon={Sparkles} label="Ask AI" href="/dashboard/ai" color="#ec4899" />
+            <QuickAction icon={UserPlus}    label="Add Client"     href="/dashboard/clients"  color="#4361ee" />
+            <QuickAction icon={Receipt}     label="New Invoice"    href="/dashboard/finance"  color="#06d6a0" />
+            <QuickAction icon={CalendarPlus}label="Schedule Meet"  href="/dashboard/meetings" color="#7b2fff" />
+            <QuickAction icon={Zap}         label="Add Lead"       href="/dashboard/leads"    color="#ffd166" />
+            <QuickAction icon={FileText}    label="View Reports"   href="/dashboard/reports"  color="#4cc9f0" />
+            <QuickAction icon={Sparkles}    label="Ask AI"         href="/dashboard/ai"       color="#f72585" />
           </div>
         </div>
 
         {/* ── Charts Row ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16 }}>
-
-          {/* Revenue Overview Line Chart */}
-          <SectionCard title="Revenue Overview" subtitle="Monthly revenue trend"
-            headerRight={<span className="badge-blue" style={{ fontSize: 10 }}>This Month</span>}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <h4 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)' }}>₹{totalRevenue.toLocaleString('en-IN')}</h4>
-              <span className="badge-success" style={{ fontSize: 10, padding: '2px 8px' }}>▲ +24%</span>
-            </div>
-            <div style={{ height: 180, position: 'relative' }}>
-              <svg viewBox="0 0 500 160" style={{ width: '100%', height: '100%' }} preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-1)" stopOpacity="0.18" />
-                    <stop offset="100%" stopColor="var(--chart-1)" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                <line x1="0" y1="40" x2="500" y2="40" stroke="var(--border-primary)" strokeWidth="1" strokeDasharray="4,4" />
-                <line x1="0" y1="80" x2="500" y2="80" stroke="var(--border-primary)" strokeWidth="1" strokeDasharray="4,4" />
-                <line x1="0" y1="120" x2="500" y2="120" stroke="var(--border-primary)" strokeWidth="1" strokeDasharray="4,4" />
-                <path d="M 15 130 C 60 120, 80 95, 110 100 C 140 105, 170 125, 205 115 C 240 105, 270 50, 300 50 C 330 50, 360 85, 395 80 C 430 75, 460 70, 485 70 L 485 160 L 15 160 Z" fill="url(#lineGrad)" />
-                <path d="M 15 130 C 60 120, 80 95, 110 100 C 140 105, 170 125, 205 115 C 240 105, 270 50, 300 50 C 330 50, 360 85, 395 80 C 430 75, 460 70, 485 70" fill="none" stroke="var(--chart-1)" strokeWidth="3" strokeLinecap="round" />
-                {[[15,130],[110,100],[205,115],[300,50],[395,80],[485,70]].map(([x,y],i) => (
-                  <circle key={i} cx={x} cy={y} r="4.5" fill={i===3 ? 'var(--chart-1)' : 'var(--bg-card)'} stroke="var(--chart-1)" strokeWidth="2.5" />
-                ))}
-                <rect x="268" y="10" width="64" height="28" rx="6" fill="var(--sidebar-bg)" />
-                <polygon points="295,38 305,38 300,43" fill="var(--sidebar-bg)" />
-                <text x="300" y="27" fill="#ffffff" fontSize="9.5" fontWeight="bold" textAnchor="middle">₹65,400</text>
-              </svg>
-              <div style={{ position: 'absolute', bottom: -4, left: 0, right: 0, display: 'flex', justifyContent: 'space-between', padding: '0 4px' }}>
-                {['1 Jun','6 Jun','11 Jun','16 Jun','21 Jun','23 Jun'].map(d => (
-                  <span key={d} style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-muted)' }}>{d}</span>
-                ))}
-              </div>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          
+          {/* Customer Habits (Bar Chart) */}
+          <SectionCard title="Customer Habits" subtitle="Jan-Jun revenue metrics">
+            <CustomerHabitsChart />
           </SectionCard>
 
-          {/* Income vs Expenses Donut */}
-          <SectionCard title="Income vs Expenses" subtitle="Financial breakdown"
-            headerRight={<span className="badge-blue" style={{ fontSize: 10 }}>This Month</span>}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, flexWrap: 'wrap' }}>
-              <div style={{ position: 'relative', width: 140, height: 140 }}>
-                <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-                  <circle cx="18" cy="18" r="14" fill="none" stroke="var(--chart-5)" strokeWidth="4.5" />
-                  <circle cx="18" cy="18" r="14" fill="none" stroke="var(--chart-4)" strokeWidth="4.5" strokeDasharray="33.9 88" strokeDashoffset="-44" />
-                  <circle cx="18" cy="18" r="14" fill="none" stroke="var(--chart-2)" strokeWidth="4.5" strokeDasharray="44 88" strokeDashoffset="0" />
-                </svg>
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)' }}>₹{totalRevenue.toLocaleString('en-IN')}</span>
-                  <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Total</span>
-                </div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {[
-                  { label: 'Income', value: totalRevenue, color: 'var(--chart-2)' },
-                  { label: 'Expenses', value: totalExpenseAmt, color: 'var(--chart-4)' },
-                  { label: 'Profit', value: netProfit, color: 'var(--chart-5)' },
-                ].map(item => (
-                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
-                      <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)' }}>{item.label}</span>
-                    </div>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)' }}>₹{item.value.toLocaleString('en-IN')}</span>
-                  </div>
-                ))}
+          {/* Product Statistics (Donut Chart) */}
+          <div className="card" style={{
+            background: 'linear-gradient(135deg, rgba(67, 97, 238, 0.08) 0%, rgba(123, 47, 255, 0.05) 100%)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 20,
+            overflow: 'hidden',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+          }}>
+            <div style={{
+              padding: '16px 22px',
+              borderBottom: '1px solid var(--border-primary)',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <div>
+                <h2 style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Product Statistics</h2>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, fontWeight: 500 }}>Traffic & sales share</p>
               </div>
             </div>
+            <div style={{ padding: 22 }}>
+              <ProductStatisticsChart />
+            </div>
+          </div>
+
+          {/* Customer Growth (Bubble Map) */}
+          <SectionCard title="Customer Growth" subtitle="Global share by country">
+            <CustomerGrowthChart />
           </SectionCard>
+
         </div>
 
         {/* ── Goals + Activity + Meetings Row ── */}
@@ -359,7 +761,7 @@ export default function CEODashboard() {
                       />
                     </svg>
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)' }}>{goal.value}%</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{goal.value}%</span>
                     </div>
                   </div>
                   <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}>{goal.label}</span>
@@ -598,14 +1000,28 @@ export default function CEODashboard() {
   // CLIENT PORTAL
   // ═══════════════════════════════════════════════════════════════
   const renderClientDashboard = () => {
-    const clientProjects = projects.filter(p => p.clientName.toLowerCase().includes(session.organizationName.toLowerCase()) || p.clientName.toLowerCase().includes(session.firstName.toLowerCase()));
-    const clientInvoices = invoices.filter(i => i.clientName.toLowerCase().includes(session.organizationName.toLowerCase()) || i.clientName.toLowerCase().includes(session.firstName.toLowerCase()));
+    const matchesClient = (name: string) => {
+      const target = name.toLowerCase().trim();
+      const org = (session.organizationName || '').toLowerCase().trim();
+      const first = (session.firstName || '').toLowerCase().trim();
+      
+      const cleanTarget = target.replace(/\s+team$|\s+agency$/, '').trim();
+      const cleanOrg = org.replace(/\s+team$|\s+agency$/, '').trim();
+      
+      return cleanTarget.includes(cleanOrg) || 
+             cleanOrg.includes(cleanTarget) || 
+             target.includes(first) || 
+             first.includes(target);
+    };
+
+    const clientProjects = projects.filter(p => matchesClient(p.clientName));
+    const clientInvoices = invoices.filter(i => matchesClient(i.clientName));
     const totalPending = clientInvoices.filter(i => i.status !== 'paid').reduce((s, i) => s + i.amount, 0);
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div className="ios-transition" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>Client Hub</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>Client Hub</h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>Your campaigns and billing at a glance.</p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
@@ -663,9 +1079,9 @@ export default function CEODashboard() {
     const pendingMyTasks = myTasks.filter(t => t.status !== 'done');
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div className="ios-transition" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>Team Workspace</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>Team Workspace</h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>Track tasks and meetings.</p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>

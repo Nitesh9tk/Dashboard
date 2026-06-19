@@ -245,7 +245,7 @@ export default function LeadsPipeline() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-primary pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-text-primary">Sales Pipeline</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-text-primary">Sales Pipeline</h1>
           <p className="text-text-secondary text-sm mt-1">Track prospective deals, manage stage conversions, and predict forecasted revenues.</p>
         </div>
         <button
@@ -272,8 +272,8 @@ export default function LeadsPipeline() {
           return (
             <div key={i} className="card p-4 flex items-center justify-between bg-bg-secondary">
               <div>
-                <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block">{stat.label}</span>
-                <span className="text-lg font-extrabold text-text-primary block mt-1">{stat.value}</span>
+                <span className="text-[10px] text-text-muted font-semibold uppercase tracking-wider block">{stat.label}</span>
+                <span className="text-lg font-bold text-text-primary block mt-1">{stat.value}</span>
                 <span className="text-[10px] text-text-secondary block mt-0.5">{stat.sub}</span>
               </div>
               <div className="p-2.5 rounded-lg flex items-center justify-center shrink-0" style={{ background: stat.color + '15', color: stat.color }}>
@@ -350,11 +350,11 @@ export default function LeadsPipeline() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full" style={{ background: stg.color }} />
-                    <h3 className="font-extrabold text-xs text-text-primary uppercase tracking-wider">{stg.name}</h3>
+                    <h3 className="font-semibold text-xs text-text-primary uppercase tracking-wider">{stg.name}</h3>
                   </div>
-                  <span className="text-[10px] text-text-secondary font-bold block mt-1">₹{(value / 100000).toFixed(2)}L potential</span>
+                  <span className="text-[10px] text-text-secondary font-medium block mt-1">₹{(value / 100000).toFixed(2)}L potential</span>
                 </div>
-                <span className="h-5 w-5 bg-bg-tertiary border border-border-primary rounded-full text-[10px] font-extrabold text-text-secondary flex items-center justify-center shrink-0">
+                <span className="h-5 w-5 bg-bg-tertiary border border-border-primary rounded-full text-[10px] font-semibold text-text-secondary flex items-center justify-center shrink-0">
                   {count}
                 </span>
               </div>
@@ -384,7 +384,7 @@ export default function LeadsPipeline() {
                         {/* Title & Edit Icon */}
                         <div className="flex justify-between items-start gap-2">
                           <div className="min-w-0">
-                            <h4 className="font-bold text-xs text-text-primary truncate">{lead.companyName || lead.clientName}</h4>
+                            <h4 className="font-semibold text-xs text-text-primary truncate">{lead.companyName || lead.clientName}</h4>
                             {lead.companyName && <span className="text-[9px] text-text-secondary block mt-0.5 truncate">{lead.clientName}</span>}
                           </div>
                           <button
@@ -400,7 +400,7 @@ export default function LeadsPipeline() {
                           <span className="bg-bg-tertiary px-2 py-0.5 rounded text-text-secondary border border-border-primary">
                             {lead.source}
                           </span>
-                          <span className="font-black text-text-primary flex items-center">
+                          <span className="font-semibold text-text-primary flex items-center">
                             ₹{lead.revenuePotential.toLocaleString('en-IN')}
                           </span>
                         </div>
@@ -408,7 +408,7 @@ export default function LeadsPipeline() {
                         {/* Footer Badges */}
                         <div className="flex items-center justify-between border-t border-border-secondary pt-2.5">
                           <span className="text-[9px] text-text-muted font-semibold capitalize">{lead.industry}</span>
-                          <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full" style={{ background: score.bg, color: score.color }}>
+                          <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full" style={{ background: score.bg, color: score.color }}>
                             {score.label}
                           </span>
                         </div>
@@ -430,7 +430,7 @@ export default function LeadsPipeline() {
             {/* Header */}
             <div className="flex justify-between items-center pb-4 border-b border-border-primary mb-5">
               <div>
-                <h3 className="font-extrabold text-base text-text-primary">
+                <h3 className="font-semibold text-base text-text-primary">
                   {selectedLead ? 'Edit Prospect Lead' : 'Add New Pipeline Lead'}
                 </h3>
                 <p className="text-xs text-text-secondary mt-0.5">

@@ -163,7 +163,7 @@ export default function MeetingsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-primary pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-text-primary">Calendar & Meetings</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-text-primary">Calendar & Meetings</h1>
           <p className="text-text-secondary text-sm mt-1">Schedule recurring syncs, manage group calls, and coordinate upcoming sprints.</p>
         </div>
         <button
@@ -211,7 +211,7 @@ export default function MeetingsPage() {
               <button
                 key={m.id}
                 onClick={() => setViewMode(m.id as any)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   viewMode === m.id
                     ? 'bg-bg-secondary text-brand-primary shadow-sm'
                     : 'text-text-secondary hover:text-text-primary'
@@ -230,7 +230,7 @@ export default function MeetingsPage() {
         <div className="card bg-bg-secondary overflow-hidden p-4">
           
           {/* Weekday Labels */}
-          <div className="grid grid-cols-7 text-center text-[10px] font-bold text-text-muted uppercase tracking-wider border-b border-border-primary pb-3 mb-2">
+          <div className="grid grid-cols-7 text-center text-[10px] font-semibold text-text-muted uppercase tracking-wider border-b border-border-primary pb-3 mb-2">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
               <div key={d}>{d}</div>
             ))}
@@ -252,7 +252,7 @@ export default function MeetingsPage() {
                   {day ? (
                     <>
                       {/* Day number */}
-                      <span className={`text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full ${
+                      <span className={`text-[10px] font-semibold h-5 w-5 flex items-center justify-center rounded-full ${
                         isToday ? 'bg-brand-primary text-white' : 'text-text-secondary'
                       }`}>
                         {day.getDate()}
@@ -268,7 +268,7 @@ export default function MeetingsPage() {
                             <div
                               key={m.id}
                               style={{ background: theme.bg, color: theme.color, borderColor: theme.border }}
-                              className="text-[9px] font-bold p-1 rounded border truncate"
+                              className="text-[9px] font-semibold p-1 rounded border truncate"
                               title={m.title}
                             >
                               {m.title}
@@ -300,10 +300,10 @@ export default function MeetingsPage() {
                   <div>
                     {/* Day Header */}
                     <div className="text-center pb-2.5 border-b border-border-primary mb-3">
-                      <p className="text-[10px] text-text-secondary font-bold uppercase tracking-wider">
+                      <p className="text-[10px] text-text-secondary font-semibold uppercase tracking-wider">
                         {day.toLocaleDateString('default', { weekday: 'short' })}
                       </p>
-                      <h4 className={`text-base font-extrabold mt-1 h-6 w-6 mx-auto flex items-center justify-center rounded-full ${
+                      <h4 className={`text-base font-bold mt-1 h-6 w-6 mx-auto flex items-center justify-center rounded-full ${
                         isToday ? 'bg-brand-primary text-white' : 'text-text-primary'
                       }`}>
                         {day.getDate()}
@@ -323,7 +323,7 @@ export default function MeetingsPage() {
                               style={{ background: theme.bg, color: theme.color, borderColor: theme.border }}
                               className="p-2 border rounded-xl flex flex-col gap-1 shadow-sm"
                             >
-                              <span className="text-[9px] font-bold line-clamp-2">{m.title}</span>
+                              <span className="text-[9px] font-semibold line-clamp-2">{m.title}</span>
                               <span className="text-[8px] opacity-75 font-semibold flex items-center gap-1">
                                 <Clock className="h-2.5 w-2.5 shrink-0" />
                                 {new Date(m.scheduledAt).toLocaleTimeString('default', { hour: '2-digit', minute: '2-digit' })}
@@ -346,7 +346,7 @@ export default function MeetingsPage() {
       {/* ── List View ── */}
       {viewMode === 'list' && (
         <div className="card bg-bg-secondary p-5 space-y-4 animate-fade-in">
-          <h3 className="font-extrabold text-sm text-text-primary border-b border-border-primary pb-3">
+          <h3 className="font-semibold text-sm text-text-primary border-b border-border-primary pb-3">
             All Scheduled Syncs
           </h3>
 
@@ -361,8 +361,8 @@ export default function MeetingsPage() {
                   <div className="flex justify-between items-start gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-text-primary">{m.title}</span>
-                        <span className="text-[8px] font-extrabold px-2 py-0.5 rounded border uppercase" style={{ background: theme.bg, color: theme.color, borderColor: theme.border }}>
+                        <span className="text-xs font-semibold text-text-primary">{m.title}</span>
+                        <span className="text-[8px] font-semibold px-2 py-0.5 rounded border uppercase" style={{ background: theme.bg, color: theme.color, borderColor: theme.border }}>
                           {theme.label}
                         </span>
                       </div>
@@ -371,7 +371,7 @@ export default function MeetingsPage() {
                       </p>
                     </div>
 
-                    <span className={`text-[9px] font-extrabold px-2.5 py-0.5 rounded-full capitalize shrink-0 ${
+                    <span className={`text-[9px] font-semibold px-2.5 py-0.5 rounded-full capitalize shrink-0 ${
                       m.status === 'completed' ? 'bg-success-light text-success' : 'bg-warning-light text-warning'
                     }`}>
                       {m.status}
@@ -407,7 +407,7 @@ export default function MeetingsPage() {
                     {m.status === 'scheduled' && m.link && (
                       <a
                         href={m.link} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-[10px] font-bold text-white bg-brand-primary px-3 py-1.5 rounded-lg hover:opacity-90 transition-all text-center"
+                        className="flex items-center gap-1 text-[10px] font-semibold text-white bg-brand-primary px-3 py-1.5 rounded-lg hover:opacity-90 transition-all text-center"
                       >
                         <Video className="h-3 w-3" /> Join Call
                       </a>
@@ -427,7 +427,7 @@ export default function MeetingsPage() {
             
             <div className="flex justify-between items-center pb-4 border-b border-border-primary mb-5">
               <div>
-                <h3 className="font-extrabold text-base text-text-primary">Schedule Meeting Sync</h3>
+                <h3 className="font-semibold text-base text-text-primary">Schedule Meeting Sync</h3>
                 <p className="text-xs text-text-secondary mt-0.5">Integrate zoom/meet coordinates for payroll staff or clients.</p>
               </div>
               <button
@@ -440,7 +440,7 @@ export default function MeetingsPage() {
 
             <form onSubmit={handleAdd} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-text-secondary">Topic / Title</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5 text-text-secondary">Topic / Title</label>
                 <input
                   type="text" required value={title} onChange={e => setTitle(e.target.value)} placeholder="GS Ayurveda Project Sync"
                   className="w-full px-3 py-2 text-xs rounded-lg border border-border-primary bg-bg-tertiary text-text-primary outline-none focus:border-brand-primary"
@@ -449,14 +449,14 @@ export default function MeetingsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-text-secondary">Date & Time</label>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5 text-text-secondary">Date & Time</label>
                   <input
                     type="datetime-local" required value={scheduledAt} onChange={e => setScheduledAt(e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-lg border border-border-primary bg-bg-tertiary text-text-primary outline-none focus:border-brand-primary cursor-pointer"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-text-secondary">Duration (min)</label>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5 text-text-secondary">Duration (min)</label>
                   <select
                     value={duration} onChange={e => setDuration(e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-lg border border-border-primary bg-bg-tertiary text-text-primary outline-none focus:border-brand-primary cursor-pointer"
@@ -471,7 +471,7 @@ export default function MeetingsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-text-secondary">Sync Type</label>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5 text-text-secondary">Sync Type</label>
                   <select
                     value={meetingType} onChange={e => setMeetingType(e.target.value as any)}
                     className="w-full px-3 py-2 text-xs rounded-lg border border-border-primary bg-bg-tertiary text-text-primary outline-none focus:border-brand-primary cursor-pointer"
@@ -482,7 +482,7 @@ export default function MeetingsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-text-secondary">Meeting Link</label>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5 text-text-secondary">Meeting Link</label>
                   <input
                     type="url" value={link} onChange={e => setLink(e.target.value)} placeholder="https://meet.google.com/..."
                     className="w-full px-3 py-2 text-xs rounded-lg border border-border-primary bg-bg-tertiary text-text-primary outline-none focus:border-brand-primary"
@@ -491,7 +491,7 @@ export default function MeetingsPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-text-secondary">Notes / Agenda (Optional)</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5 text-text-secondary">Notes / Agenda (Optional)</label>
                 <textarea
                   value={summary} onChange={e => setSummary(e.target.value)} placeholder="Agenda outline details..."
                   className="w-full px-3 py-2 text-xs rounded-lg border border-border-primary bg-bg-tertiary text-text-primary outline-none focus:border-brand-primary h-20 resize-none"
@@ -502,13 +502,13 @@ export default function MeetingsPage() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-lg text-xs font-bold border border-border-primary text-text-secondary hover:bg-bg-tertiary transition-all cursor-pointer"
+                  className="flex-1 py-2.5 rounded-lg text-xs font-semibold border border-border-primary text-text-secondary hover:bg-bg-tertiary transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-lg text-xs font-bold text-white bg-brand-primary hover:opacity-90 transition-all shadow-sm cursor-pointer"
+                  className="flex-1 py-2.5 rounded-lg text-xs font-semibold text-white bg-brand-primary hover:opacity-90 transition-all shadow-sm cursor-pointer"
                 >
                   Schedule Call
                 </button>

@@ -85,7 +85,7 @@ export default function ReportsPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>Reports Center</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>Reports Center</h1>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Pre-built analytics for data-driven decisions</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -116,7 +116,7 @@ export default function ReportsPage() {
                 padding: '10px 18px', borderRadius: 10, border: 'none',
                 background: isActive ? 'var(--accent)' : 'var(--bg-card)',
                 color: isActive ? 'white' : 'var(--text-secondary)',
-                fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                fontSize: 13, fontWeight: 500, cursor: 'pointer',
                 boxShadow: isActive ? '0 4px 12px rgba(37,99,235,0.25)' : 'var(--card-shadow)',
                 transition: 'all 150ms ease',
               }}
@@ -140,9 +140,9 @@ export default function ReportsPage() {
                 { label: 'Net Profit', value: netProfit, trend: netProfit > 0 ? '+32%' : 'Loss', up: netProfit > 0 },
               ].map(item => (
                 <div key={item.label} className="card" style={{ padding: 20, background: 'var(--bg-card)' }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8 }}>{item.label}</p>
+                  <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8 }}>{item.label}</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <h3 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)' }}>₹{item.value.toLocaleString('en-IN')}</h3>
+                    <h3 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)' }}>₹{item.value.toLocaleString('en-IN')}</h3>
                     <span className={item.up ? 'badge-success' : 'badge-danger'} style={{ fontSize: 10 }}>{item.trend}</span>
                   </div>
                 </div>
@@ -152,16 +152,16 @@ export default function ReportsPage() {
             {/* P&L Table */}
             <div className="card" style={{ background: 'var(--bg-card)', overflow: 'hidden' }}>
               <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-primary)' }}>
-                <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Profit & Loss Statement</h3>
+                <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Profit & Loss Statement</h3>
               </div>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--border-primary)' }}>
-                      <th style={{ padding: '12px 20px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Item</th>
-                      <th style={{ padding: '12px 20px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>This Month</th>
-                      <th style={{ padding: '12px 20px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Last Month</th>
-                      <th style={{ padding: '12px 20px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Change</th>
+                      <th style={{ padding: '12px 20px', textAlign: 'left', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Item</th>
+                      <th style={{ padding: '12px 20px', textAlign: 'right', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>This Month</th>
+                      <th style={{ padding: '12px 20px', textAlign: 'right', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Last Month</th>
+                      <th style={{ padding: '12px 20px', textAlign: 'right', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Change</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -174,8 +174,8 @@ export default function ReportsPage() {
                       const change = row.previous > 0 ? Math.round(((row.current - row.previous) / row.previous) * 100) : 0;
                       return (
                         <tr key={row.item} style={{ borderBottom: '1px solid var(--border-secondary)' }}>
-                          <td style={{ padding: '14px 20px', fontSize: 13, fontWeight: row.item === 'Net Profit' ? 700 : 500, color: 'var(--text-primary)' }}>{row.item}</td>
-                          <td style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, fontWeight: 600, color: row.isIncome ? 'var(--success)' : 'var(--text-primary)' }}>₹{row.current.toLocaleString('en-IN')}</td>
+                          <td style={{ padding: '14px 20px', fontSize: 13, fontWeight: row.item === 'Net Profit' ? 600 : 500, color: 'var(--text-primary)' }}>{row.item}</td>
+                          <td style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, fontWeight: 500, color: row.isIncome ? 'var(--success)' : 'var(--text-primary)' }}>₹{row.current.toLocaleString('en-IN')}</td>
                           <td style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, color: 'var(--text-muted)' }}>₹{row.previous.toLocaleString('en-IN')}</td>
                           <td style={{ padding: '14px 20px', textAlign: 'right' }}>
                             <span className={change >= 0 ? 'badge-success' : 'badge-danger'} style={{ fontSize: 10 }}>
@@ -195,7 +195,7 @@ export default function ReportsPage() {
         {activeReport === 'clients' && (
           <div className="card" style={{ background: 'var(--bg-card)', overflow: 'hidden' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-primary)' }}>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Client Retention Report</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Client Retention Report</h3>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{clients.length} total clients • {activeClients.length} active</p>
             </div>
             <div style={{ overflowX: 'auto' }}>
@@ -203,7 +203,7 @@ export default function ReportsPage() {
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-primary)' }}>
                     {['Company', 'Status', 'Monthly Fee', 'Received', 'Balance', 'Health'].map(h => (
-                      <th key={h} style={{ padding: '12px 20px', textAlign: h === 'Company' ? 'left' : 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{h}</th>
+                      <th key={h} style={{ padding: '12px 20px', textAlign: h === 'Company' ? 'left' : 'right', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -214,13 +214,13 @@ export default function ReportsPage() {
                     return (
                       <tr key={c.id} style={{ borderBottom: '1px solid var(--border-secondary)' }}>
                         <td style={{ padding: '14px 20px' }}>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{c.companyName}</p>
+                          <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{c.companyName}</p>
                           <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>{c.contactPerson}</p>
                         </td>
                         <td style={{ padding: '14px 20px', textAlign: 'right' }}>
                           <span className={c.status === 'active' ? 'badge-success' : 'badge-warning'} style={{ fontSize: 10, textTransform: 'capitalize' }}>{c.status}</span>
                         </td>
-                        <td style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>₹{c.monthlyFee.toLocaleString('en-IN')}</td>
+                        <td style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>₹{c.monthlyFee.toLocaleString('en-IN')}</td>
                         <td style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, color: 'var(--success)' }}>₹{c.received.toLocaleString('en-IN')}</td>
                         <td style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, color: c.balance > 0 ? 'var(--danger)' : 'var(--text-muted)' }}>₹{c.balance.toLocaleString('en-IN')}</td>
                         <td style={{ padding: '14px 20px', textAlign: 'right' }}>
@@ -238,7 +238,7 @@ export default function ReportsPage() {
         {activeReport === 'team' && (
           <div className="card" style={{ background: 'var(--bg-card)', overflow: 'hidden' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-primary)' }}>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Team Productivity Report</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Team Productivity Report</h3>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{employees.length} team members</p>
             </div>
             <div style={{ overflowX: 'auto' }}>
@@ -246,7 +246,7 @@ export default function ReportsPage() {
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-primary)' }}>
                     {['Team Member', 'Position', 'Department', 'Performance', 'Productivity', 'Salary'].map(h => (
-                      <th key={h} style={{ padding: '12px 20px', textAlign: h === 'Team Member' ? 'left' : 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{h}</th>
+                      <th key={h} style={{ padding: '12px 20px', textAlign: h === 'Team Member' ? 'left' : 'right', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -259,9 +259,9 @@ export default function ReportsPage() {
                             width: 32, height: 32, borderRadius: '50%',
                             background: `linear-gradient(135deg, hsl(${e.name.charCodeAt(0) * 7 % 360}, 60%, 55%), hsl(${e.name.charCodeAt(0) * 7 % 360 + 30}, 60%, 45%))`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'white', fontSize: 11, fontWeight: 700,
+                            color: 'white', fontSize: 11, fontWeight: 600,
                           }}>{e.name.charAt(0)}</div>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{e.name}</span>
+                          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{e.name}</span>
                         </div>
                       </td>
                       <td style={{ padding: '14px 20px', textAlign: 'right', fontSize: 12, color: 'var(--text-secondary)' }}>{e.position}</td>
@@ -271,13 +271,13 @@ export default function ReportsPage() {
                           <div style={{ width: 48, height: 5, borderRadius: 4, background: 'var(--bg-tertiary)' }}>
                             <div style={{ height: '100%', borderRadius: 4, background: e.performanceScore >= 80 ? 'var(--success)' : e.performanceScore >= 60 ? 'var(--warning)' : 'var(--danger)', width: `${e.performanceScore}%` }} />
                           </div>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', width: 30 }}>{e.performanceScore}%</span>
+                          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)', width: 30 }}>{e.performanceScore}%</span>
                         </div>
                       </td>
                       <td style={{ padding: '14px 20px', textAlign: 'right' }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{e.productivityScore}%</span>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)' }}>{e.productivityScore}%</span>
                       </td>
-                      <td style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>₹{e.salary.toLocaleString('en-IN')}</td>
+                      <td style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>₹{e.salary.toLocaleString('en-IN')}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -296,31 +296,31 @@ export default function ReportsPage() {
                 { label: 'Pending Collections', value: totalBalance, color: 'var(--warning)' },
               ].map(item => (
                 <div key={item.label} className="card" style={{ padding: 20, background: 'var(--bg-card)' }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8 }}>{item.label}</p>
-                  <h3 style={{ fontSize: 22, fontWeight: 800, color: item.color }}>₹{Math.abs(item.value).toLocaleString('en-IN')}</h3>
+                  <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 8 }}>{item.label}</p>
+                  <h3 style={{ fontSize: 22, fontWeight: 700, color: item.color }}>₹{Math.abs(item.value).toLocaleString('en-IN')}</h3>
                 </div>
               ))}
             </div>
 
             <div className="card" style={{ background: 'var(--bg-card)', overflow: 'hidden' }}>
               <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-primary)' }}>
-                <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Invoice Cash Flow</h3>
+                <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Invoice Cash Flow</h3>
               </div>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--border-primary)' }}>
                       {['Invoice', 'Client', 'Amount', 'Status', 'Due Date'].map(h => (
-                        <th key={h} style={{ padding: '12px 20px', textAlign: h === 'Invoice' || h === 'Client' ? 'left' : 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{h}</th>
+                        <th key={h} style={{ padding: '12px 20px', textAlign: h === 'Invoice' || h === 'Client' ? 'left' : 'right', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {invoices.map(inv => (
                       <tr key={inv.id} style={{ borderBottom: '1px solid var(--border-secondary)' }}>
-                        <td style={{ padding: '14px 20px', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{inv.invoiceNumber}</td>
+                        <td style={{ padding: '14px 20px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{inv.invoiceNumber}</td>
                         <td style={{ padding: '14px 20px', fontSize: 13, color: 'var(--text-secondary)' }}>{inv.clientName}</td>
-                        <td style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>₹{inv.amount.toLocaleString('en-IN')}</td>
+                        <td style={{ padding: '14px 20px', textAlign: 'right', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>₹{inv.amount.toLocaleString('en-IN')}</td>
                         <td style={{ padding: '14px 20px', textAlign: 'right' }}>
                           <span className={inv.status === 'paid' ? 'badge-success' : inv.status === 'overdue' ? 'badge-danger' : 'badge-warning'} style={{ fontSize: 10, textTransform: 'capitalize' }}>{inv.status}</span>
                         </td>

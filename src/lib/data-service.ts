@@ -85,6 +85,10 @@ function saveLocal<T>(key: string, data: T[]): void {
 export const dataService = {
   // Check if Supabase mode is active
   isOnline(): boolean {
+    if (typeof window !== 'undefined') {
+      const session = authHelper.getCurrentSession();
+      if (session?.isDemo) return false;
+    }
     return authHelper.isSupabaseConfigured();
   },
 

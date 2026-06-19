@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authHelper } from '@/lib/auth';
-import { Eye, EyeOff, ShieldCheck, Database, Zap, X, PhoneCall, KeyRound, ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { Eye, EyeOff, ShieldCheck, Database, Zap, X, PhoneCall, KeyRound, ArrowLeft, ArrowRight, Check, Crown, Users, UserCheck } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,9 +34,27 @@ export default function LoginPage() {
     }
     // Verify Supabase Config
     setIsDbConnected(authHelper.isSupabaseConfigured());
-    // Auto-disable demo mode if database variables are active
-    if (authHelper.isSupabaseConfigured()) {
-      setIsDemoMode(false);
+    
+    // Force align/correct local user base credentials
+    if (typeof window !== 'undefined') {
+      const userBaseStr = localStorage.getItem('bb24_user_base');
+      let userBase = userBaseStr ? JSON.parse(userBaseStr) : [];
+      
+      const targetUsers = [
+        { email: 'ceo@bb24.agency', password: 'admin', role: 'founder', name: 'Nitesh Sharma', phone: '+91 98765 43210' },
+        { email: 'gsayurveda@email.com', password: 'password', role: 'client', name: 'GS Ayurveda Team' },
+        { email: 'kavya@bb24.agency', password: 'password', role: 'employee', name: 'Kavya' }
+      ];
+
+      targetUsers.forEach(target => {
+        const existingIdx = userBase.findIndex((u: any) => u.email.toLowerCase() === target.email.toLowerCase());
+        if (existingIdx !== -1) {
+          userBase[existingIdx] = { ...userBase[existingIdx], ...target };
+        } else {
+          userBase.push(target);
+        }
+      });
+      localStorage.setItem('bb24_user_base', JSON.stringify(userBase));
     }
   }, [router]);
 
@@ -59,20 +77,35 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoBypass = async () => {
+  const handleQuickLogin = async (role: 'admin' | 'client' | 'team') => {
     setLoading(true);
     setError('');
-    setEmail('ceo@bb24.agency');
-    setPassword('admin');
+    let targetEmail = '';
+    let targetPass = '';
+    
+    if (role === 'admin') {
+      targetEmail = 'ceo@bb24.agency';
+      targetPass = 'admin';
+    } else if (role === 'client') {
+      targetEmail = 'gsayurveda@email.com';
+      targetPass = 'password';
+    } else if (role === 'team') {
+      targetEmail = 'kavya@bb24.agency';
+      targetPass = 'password';
+    }
+
+    setEmail(targetEmail);
+    setPassword(targetPass);
+
     try {
-      const res = await authHelper.signIn('ceo@bb24.agency', 'admin', true);
+      const res = await authHelper.signIn(targetEmail, targetPass, true);
       if (res.success) {
         router.push('/dashboard');
       } else {
-        setError(res.error || 'Demo launch failed');
+        setError(res.error || 'Quick login failed');
       }
     } catch (err: any) {
-      setError(err.message || 'Demo launch failed');
+      setError(err.message || 'Quick login failed');
     } finally {
       setLoading(false);
     }
@@ -85,10 +118,29 @@ export default function LoginPage() {
     // Seed initial base if it hasn't run yet
     const userBaseStr = localStorage.getItem('bb24_user_base');
     let userBase = userBaseStr ? JSON.parse(userBaseStr) : [];
-    if (userBase.length === 0) {
+    
+    const requiredDemoEmails = ['ceo@bb24.agency', 'gsayurveda@email.com', 'kavya@bb24.agency'];
+    const isMissingAny = !userBaseStr || !requiredDemoEmails.every(email => 
+      userBase.some((u: any) => u.email.toLowerCase() === email.toLowerCase())
+    );
+
+    if (isMissingAny || userBase.length === 0) {
       userBase = [
         { email: 'ceo@bb24.agency', password: 'admin', role: 'founder', name: 'Nitesh Sharma', phone: '+91 98765 43210' },
-        { email: 'ceo.bb24.agency@gmail.com', password: 'admin', role: 'founder', name: 'Nitesh Sharma', phone: '+91 98765 43210' }
+        { email: 'ceo.bb24.agency@gmail.com', password: 'admin', role: 'founder', name: 'Nitesh Sharma', phone: '+91 98765 43210' },
+        // Employees
+        { email: 'divyansh@bb24.agency', password: 'password', role: 'employee', name: 'Divyansh' },
+        { email: 'govind@bb24.agency', password: 'password', role: 'employee', name: 'Govind' },
+        { email: 'kavya@bb24.agency', password: 'password', role: 'employee', name: 'Kavya' },
+        { email: 'amit@bb24.agency', password: 'password', role: 'employee', name: 'Amit' },
+        { email: 'nitin@bb24.agency', password: 'password', role: 'employee', name: 'Nitin' },
+        // Clients
+        { email: 'gsayurveda@email.com', password: 'password', role: 'client', name: 'GS Ayurveda Team' },
+        { email: 'ashvastra@email.com', password: 'password', role: 'client', name: 'Ashvastra Team' },
+        { email: 'chillqubig@email.com', password: 'password', role: 'client', name: 'Chillqubig Team' },
+        { email: 'oncoadvisor@email.com', password: 'password', role: 'client', name: 'OncoAdvisor Team' },
+        { email: 'spevents@email.com', password: 'password', role: 'client', name: 'SP Events Team' },
+        { email: 'wellavitta@email.com', password: 'password', role: 'client', name: 'WellaVitta Team' },
       ];
       localStorage.setItem('bb24_user_base', JSON.stringify(userBase));
     }
@@ -165,36 +217,15 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 glass-panel p-8 rounded-2xl border border-border-primary shadow-xl relative z-10">
         {/* Header */}
         <div className="text-center">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-primary text-bg-primary font-bold text-2xl tracking-wider mb-3 shadow-md">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-primary text-bg-primary font-semibold text-2xl tracking-wider mb-3 shadow-md">
             BB
           </div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-text-primary">
+          <h2 className="text-3xl font-bold tracking-tight text-text-primary">
             Welcome to BB24
           </h2>
           <p className="mt-2 text-sm text-text-secondary">
             The Premium Marketing Agency Operating System
           </p>
-        </div>
-
-        {/* Database Status Alert */}
-        <div className="flex items-center gap-3 p-3 rounded-lg text-xs border border-border-primary bg-bg-secondary">
-          {isDbConnected ? (
-            <>
-              <Database className="h-4 w-4 text-brand-success shrink-0" />
-              <div className="text-left">
-                <span className="font-semibold text-text-primary block">Supabase Connected</span>
-                <span className="text-text-secondary">Using your external cloud database storage.</span>
-              </div>
-            </>
-          ) : (
-            <>
-              <ShieldCheck className="h-4 w-4 text-brand-warning shrink-0" />
-              <div className="text-left">
-                <span className="font-semibold text-text-primary block">Local Sandbox (Demo Mode)</span>
-                <span className="text-text-secondary">No setup required. Login password is required.</span>
-              </div>
-            </>
-          )}
         </div>
 
         {error && (
@@ -207,7 +238,7 @@ export default function LoginPage() {
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+              <label htmlFor="email" className="block text-xs font-medium text-text-secondary uppercase tracking-wider mb-2">
                 Email Address
               </label>
               <input
@@ -218,19 +249,19 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ceo@bb24.agency"
-                className="w-full px-4 py-3 bg-bg-secondary border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all text-sm"
+                className="w-full px-4 py-3 bg-bg-secondary/40 border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all text-sm backdrop-blur-md"
               />
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label htmlFor="password" className="block text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                <label htmlFor="password" className="block text-xs font-medium text-text-secondary uppercase tracking-wider">
                   Password
                 </label>
                 <button
                   type="button"
                   onClick={() => { setIsForgotOpen(true); setForgotStep(1); setForgotError(''); }}
-                  className="text-[11px] font-bold text-brand-accent hover:underline bg-none border-none cursor-pointer"
+                  className="text-[11px] font-semibold text-brand-accent hover:underline bg-none border-none cursor-pointer"
                 >
                   Forgot Password?
                 </button>
@@ -244,7 +275,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 bg-bg-secondary border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all text-sm"
+                  className="w-full px-4 py-3 bg-bg-secondary/40 border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all text-sm backdrop-blur-md"
                 />
                 <button
                   type="button"
@@ -257,46 +288,63 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Mode Selector Toggle (Show if DB is connected) */}
-          {isDbConnected && (
-            <div className="flex items-center justify-between border-t border-border-primary pt-4 text-sm">
-              <span className="text-text-secondary">Enable Demo Mode</span>
-              <button
-                type="button"
-                onClick={() => setIsDemoMode(!isDemoMode)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                  isDemoMode ? 'bg-brand-accent' : 'bg-bg-tertiary'
-                }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                    isDemoMode ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-          )}
-
-          <div className="space-y-3 pt-2">
+          <div className="space-y-4 pt-2">
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-brand-primary text-bg-primary hover:bg-brand-primary/90 text-sm font-semibold rounded-xl transition-all shadow-sm focus:outline-none flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 px-4 bg-brand-primary text-bg-primary hover:bg-brand-primary/90 text-sm font-semibold rounded-xl transition-all shadow-lg shadow-brand-primary/20 focus:outline-none flex items-center justify-center gap-2 cursor-pointer active:scale-95 duration-150"
             >
               {loading ? 'Processing...' : 'Sign In'}
             </button>
 
-            {isDemoMode && (
-              <button
-                type="button"
-                onClick={handleDemoBypass}
-                disabled={loading}
-                className="w-full py-3 px-4 bg-brand-accent text-white hover:bg-brand-accent-hover text-sm font-semibold rounded-xl transition-all shadow-md focus:outline-none flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Zap className="h-4 w-4 fill-current" />
-                {loading ? 'Launching...' : 'Launch Demo Workspace'}
-              </button>
-            )}
+            <div className="space-y-3 pt-2">
+              <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">
+                Or Sign In Instantly via Demo Roles
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {/* Admin Preset */}
+                <button
+                  type="button"
+                  onClick={() => handleQuickLogin('admin')}
+                  disabled={loading}
+                  className="flex flex-col items-center justify-center p-3 rounded-xl border border-border-primary bg-bg-secondary/30 backdrop-blur-md hover:border-brand-primary/50 hover:bg-brand-primary/10 transition-all group cursor-pointer active:scale-95 duration-150"
+                >
+                  <div className="p-2 rounded-lg bg-brand-primary/15 text-brand-primary group-hover:scale-110 transition-transform shadow-inner">
+                    <Crown className="h-4 w-4" />
+                  </div>
+                  <span className="text-[11px] font-semibold text-text-primary mt-2">CEO & Founder</span>
+                  <span className="text-[8px] text-text-secondary font-medium mt-0.5">Nitesh Sharma</span>
+                </button>
+
+                {/* Client Preset */}
+                <button
+                  type="button"
+                  onClick={() => handleQuickLogin('client')}
+                  disabled={loading}
+                  className="flex flex-col items-center justify-center p-3 rounded-xl border border-border-primary bg-bg-secondary/30 backdrop-blur-md hover:border-brand-success/50 hover:bg-brand-success/10 transition-all group cursor-pointer active:scale-95 duration-150"
+                >
+                  <div className="p-2 rounded-lg bg-brand-success/15 text-brand-success group-hover:scale-110 transition-transform shadow-inner">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <span className="text-[11px] font-semibold text-text-primary mt-2">Client Portal</span>
+                  <span className="text-[8px] text-text-secondary font-medium mt-0.5">GS Ayurveda</span>
+                </button>
+
+                {/* Team Preset */}
+                <button
+                  type="button"
+                  onClick={() => handleQuickLogin('team')}
+                  disabled={loading}
+                  className="flex flex-col items-center justify-center p-3 rounded-xl border border-border-primary bg-bg-secondary/30 backdrop-blur-md hover:border-brand-accent/50 hover:bg-brand-accent/10 transition-all group cursor-pointer active:scale-95 duration-150"
+                >
+                  <div className="p-2 rounded-lg bg-brand-accent/15 text-brand-accent group-hover:scale-110 transition-transform shadow-inner">
+                    <UserCheck className="h-4 w-4" />
+                  </div>
+                  <span className="text-[11px] font-semibold text-text-primary mt-2">Team Workspace</span>
+                  <span className="text-[8px] text-text-secondary font-medium mt-0.5">Kavya - Specialist</span>
+                </button>
+              </div>
+            </div>
           </div>
         </form>
 
@@ -314,7 +362,7 @@ export default function LoginPage() {
           <div className="w-full max-w-md bg-bg-secondary border border-border-primary rounded-2xl shadow-modal overflow-hidden p-6 animate-scale-in">
             <div className="flex justify-between items-center pb-4 border-b border-border-primary mb-5">
               <div>
-                <h3 className="font-extrabold text-base text-text-primary">Reset Password</h3>
+                <h3 className="font-bold text-base text-text-primary">Reset Password</h3>
                 <p className="text-xs text-text-secondary mt-0.5">Reset your workspace password using your mobile number.</p>
               </div>
               <button
@@ -334,9 +382,9 @@ export default function LoginPage() {
             {forgotStep === 1 && (
               <form onSubmit={handleSendForgotOtp} className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-2">Registered Mobile Number</label>
+                  <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-wider mb-2">Registered Mobile Number</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs font-semibold text-text-secondary">+91</div>
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs font-medium text-text-secondary">+91</div>
                     <input
                       type="tel"
                       required
@@ -345,14 +393,14 @@ export default function LoginPage() {
                       value={forgotPhone}
                       onChange={(e) => setForgotPhone(e.target.value.replace(/\D/g, ''))}
                       placeholder="98765 43210"
-                      className="w-full pl-10 pr-4 py-3 bg-bg-secondary border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all text-sm font-semibold tracking-wider"
+                      className="w-full pl-10 pr-4 py-3 bg-bg-secondary border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all text-sm font-medium tracking-wider"
                     />
                   </div>
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 px-4 bg-brand-primary text-bg-primary hover:opacity-95 text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3 px-4 bg-brand-primary text-bg-primary hover:opacity-95 text-xs font-semibold rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {loading ? 'Sending Code...' : 'Send Reset Code'}
                   <PhoneCall className="h-4 w-4" />
@@ -363,7 +411,7 @@ export default function LoginPage() {
             {forgotStep === 2 && (
               <form onSubmit={handleVerifyForgotOtp} className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-2">6-Digit Reset Code</label>
+                  <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-wider mb-2">6-Digit Reset Code</label>
                   <input
                     type="text"
                     required
@@ -371,20 +419,20 @@ export default function LoginPage() {
                     value={forgotOtp}
                     onChange={(e) => setForgotOtp(e.target.value.replace(/\D/g, ''))}
                     placeholder="Enter reset code"
-                    className="w-full px-4 py-3 bg-bg-secondary border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all text-sm font-bold text-center tracking-widest"
+                    className="w-full px-4 py-3 bg-bg-secondary border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all text-sm font-semibold text-center tracking-widest"
                   />
                 </div>
                 <div className="flex gap-3">
                   <button
                     type="button"
                     onClick={() => setForgotStep(1)}
-                    className="py-3 px-4 border border-border-primary hover:bg-bg-tertiary text-text-secondary hover:text-text-primary text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="py-3 px-4 border border-border-primary hover:bg-bg-tertiary text-text-secondary hover:text-text-primary text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <ArrowLeft className="h-4 w-4" /> Back
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 py-3 px-4 bg-brand-accent text-white hover:bg-brand-accent-hover text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 py-3 px-4 bg-brand-accent text-white hover:bg-brand-accent-hover text-xs font-semibold rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                   >
                     Verify Code <KeyRound className="h-4 w-4" />
                   </button>
@@ -395,7 +443,7 @@ export default function LoginPage() {
             {forgotStep === 3 && (
               <form onSubmit={handleResetPassword} className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1.5">New Password</label>
+                  <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-wider mb-1.5">New Password</label>
                   <input
                     type="password"
                     required
@@ -406,7 +454,7 @@ export default function LoginPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1.5">Confirm New Password</label>
+                  <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-wider mb-1.5">Confirm New Password</label>
                   <input
                     type="password"
                     required
@@ -418,7 +466,7 @@ export default function LoginPage() {
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-3 px-4 bg-brand-primary text-bg-primary hover:opacity-95 text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3 px-4 bg-brand-primary text-bg-primary hover:opacity-95 text-xs font-semibold rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                 >
                   Reset Password <Check className="h-4 w-4" />
                 </button>

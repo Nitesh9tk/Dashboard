@@ -196,7 +196,7 @@ function RichAIMessage({ content, data }: { content: string; data: any }) {
         <div className="text-xs leading-relaxed" dangerouslySetInnerHTML={{ __html: textPart.replace(/\n/g, '<br />') }} />
         {/* Render SVG Line Chart */}
         <div className="p-4 rounded-xl border border-border-primary bg-bg-secondary w-full max-w-sm shadow-sm">
-          <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-2">Revenue Growth H1 2026</p>
+          <p className="text-[10px] text-text-muted font-semibold uppercase tracking-wider mb-2">Revenue Growth H1 2026</p>
           <svg viewBox="0 0 300 120" className="w-full h-24">
             <polyline
               fill="none"
@@ -208,7 +208,7 @@ function RichAIMessage({ content, data }: { content: string; data: any }) {
               <circle key={i} cx={x} cy={y} r="3.5" fill="var(--bg-secondary)" stroke="var(--chart-1)" strokeWidth="2" />
             ))}
           </svg>
-          <div className="flex justify-between text-[8px] text-text-muted mt-1 font-bold">
+          <div className="flex justify-between text-[8px] text-text-muted mt-1 font-semibold">
             <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
           </div>
         </div>
@@ -227,7 +227,7 @@ function RichAIMessage({ content, data }: { content: string; data: any }) {
         <div className="text-xs leading-relaxed" dangerouslySetInnerHTML={{ __html: textPart.replace(/\n/g, '<br />') }} />
         {/* Render SVG Bar Chart */}
         <div className="p-4 rounded-xl border border-border-primary bg-bg-secondary w-full max-w-sm shadow-sm">
-          <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider mb-3">Expenses Breakdown</p>
+          <p className="text-[10px] text-text-muted font-semibold uppercase tracking-wider mb-3">Expenses Breakdown</p>
           <div className="space-y-2.5">
             {[
               { label: 'Salaries & Payroll', amt: salaries, color: 'var(--chart-1)' },
@@ -240,7 +240,7 @@ function RichAIMessage({ content, data }: { content: string; data: any }) {
                 <div key={i} className="space-y-1">
                   <div className="flex justify-between text-[9px] text-text-secondary">
                     <span>{bar.label}</span>
-                    <span className="font-bold">₹{bar.amt.toLocaleString('en-IN')}</span>
+                    <span className="font-semibold">₹{bar.amt.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="h-2 w-full bg-bg-tertiary rounded-full overflow-hidden">
                     <div className="h-full rounded-full" style={{ width: `${width}%`, background: bar.color }} />
@@ -272,7 +272,7 @@ function RichAIMessage({ content, data }: { content: string; data: any }) {
         <div className="p-3.5 rounded-xl border border-border-primary bg-bg-secondary w-full max-w-sm shadow-sm overflow-hidden">
           <table className="w-full text-left text-[10px] border-collapse">
             <tbody>
-              <tr className="bg-bg-tertiary/40 font-bold border-y border-border-primary text-text-primary">
+              <tr className="bg-bg-tertiary/40 font-semibold border-y border-border-primary text-text-primary">
                 <td className="py-2 px-2">Revenue Receipts</td>
                 <td className="py-2 px-2 text-right">₹{totalReceived.toLocaleString('en-IN')}</td>
               </tr>
@@ -284,7 +284,7 @@ function RichAIMessage({ content, data }: { content: string; data: any }) {
                 <td className="py-1.5 px-4">OpEx Expenses</td>
                 <td className="py-1.5 px-2 text-right">-₹{totalOpex.toLocaleString('en-IN')}</td>
               </tr>
-              <tr className="bg-brand-primary/10 font-bold border-y border-brand-primary/20 text-brand-primary">
+              <tr className="bg-brand-primary/10 font-semibold border-y border-brand-primary/20 text-brand-primary">
                 <td className="py-2 px-2">EBITDA Net Profit</td>
                 <td className="py-2 px-2 text-right">₹{netProfit.toLocaleString('en-IN')}</td>
               </tr>
@@ -425,7 +425,7 @@ export default function AIAssistantPage() {
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-text-primary">BB24 AI Brain</h1>
+            <h1 className="text-lg font-semibold text-text-primary">BB24 AI Brain</h1>
             <p className="text-[10px] flex items-center gap-1.5 text-text-secondary">
               <span className="h-1.5 w-1.5 rounded-full bg-brand-success status-dot" />
               Online — Linked to clients, leads, invoices, and payrolls
@@ -435,7 +435,7 @@ export default function AIAssistantPage() {
         <div className="flex gap-2">
           <button
             onClick={exportConversation}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-border-primary text-text-secondary hover:bg-bg-tertiary transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-border-primary text-text-secondary hover:bg-bg-tertiary transition-all cursor-pointer"
           >
             <Download className="h-3.5 w-3.5" /> Export Log
           </button>
@@ -444,7 +444,7 @@ export default function AIAssistantPage() {
               setDisplayContent({});
               setMessages([messages[0]]);
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-border-primary text-text-secondary hover:bg-bg-tertiary transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-border-primary text-text-secondary hover:bg-bg-tertiary transition-all cursor-pointer"
           >
             <Trash2 className="h-3.5 w-3.5" /> Clear Chat
           </button>
@@ -468,7 +468,7 @@ export default function AIAssistantPage() {
               }`}
             >
               {/* Avatar */}
-              <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-white font-bold text-xs ${
+              <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-white font-semibold text-xs ${
                 isUser ? 'gradient-purple' : 'bg-brand-primary'
               }`}>
                 {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
@@ -523,7 +523,7 @@ export default function AIAssistantPage() {
           <button
             key={idx}
             onClick={() => sendMessage(s)}
-            className="p-2.5 text-left text-[10px] font-bold rounded-xl border border-border-primary bg-bg-secondary hover:border-brand-primary text-text-secondary hover:text-text-primary transition-all cursor-pointer truncate"
+            className="p-2.5 text-left text-[10px] font-semibold rounded-xl border border-border-primary bg-bg-secondary hover:border-brand-primary text-text-secondary hover:text-text-primary transition-all cursor-pointer truncate"
           >
             {s}
           </button>

@@ -163,37 +163,39 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--bg-primary)' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
 
       {/* ═══════════════════════════════════════════════════════════
           SIDEBAR — Always dark, collapsible
           ═══════════════════════════════════════════════════════════ */}
       <aside
-        className="hidden lg:flex flex-col shrink-0 relative"
+        className="hidden lg:flex flex-col shrink-0 h-full"
         style={{
+          position: 'relative',
+          zIndex: 50,
           width: isCollapsed ? 72 : 260,
+          minWidth: isCollapsed ? 72 : 260,
           background: 'var(--sidebar-bg)',
           borderRight: '1px solid var(--sidebar-border)',
           transition: 'width 250ms cubic-bezier(0.16, 1, 0.3, 1)',
+          boxShadow: '4px 0 32px rgba(0,0,0,0.15)',
         }}
       >
         {/* Brand */}
-        <div style={{ padding: isCollapsed ? '16px 0' : '16px 20px', display: 'flex', alignItems: 'center', gap: 12, justifyContent: isCollapsed ? 'center' : 'flex-start', height: 64 }}>
-          <img 
-            src="/bb24-logo.png" 
-            alt="BB24 Logo" 
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              objectFit: 'contain',
-              flexShrink: 0,
-            }}
-          />
+        <div style={{ padding: isCollapsed ? '20px 0' : '20px 20px', display: 'flex', alignItems: 'center', gap: 12, justifyContent: isCollapsed ? 'center' : 'flex-start', height: 68 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+            background: 'linear-gradient(135deg, #4361ee, #7b2fff)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 0 18px rgba(67,97,238,0.5)',
+            overflow: 'hidden',
+          }}>
+            <img src="/bb24-logo.png" alt="BB24 Logo" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+          </div>
           {!isCollapsed && (
             <div style={{ overflow: 'hidden' }}>
-              <p style={{ fontWeight: 800, fontSize: 14, color: '#f1f5f9', lineHeight: 1.2 }}>BB24</p>
-              <p style={{ fontSize: 10, color: '#64748b', fontWeight: 500 }}>Business OS</p>
+              <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.2 }}>BB24</p>
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500 }}>Business OS</p>
             </div>
           )}
         </div>
@@ -202,17 +204,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           style={{
-            position: 'absolute', top: 20, right: -12,
-            width: 24, height: 24, borderRadius: '50%',
-            background: 'var(--sidebar-bg-secondary)', border: '1px solid var(--sidebar-border)',
+            position: 'absolute', top: 22, right: -13,
+            width: 26, height: 26, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #0d1630, #141e3d)',
+            border: '1px solid rgba(67,97,238,0.3)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', color: '#94a3b8', zIndex: 50,
-            transition: 'all 150ms ease',
+            cursor: 'pointer', color: '#4361ee', zIndex: 50,
+            transition: 'all 180ms ease',
+            boxShadow: '0 2px 12px rgba(67,97,238,0.25)',
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#334155'; (e.currentTarget as HTMLElement).style.color = '#f1f5f9'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--sidebar-bg-secondary)'; (e.currentTarget as HTMLElement).style.color = '#94a3b8'; }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 16px rgba(67,97,238,0.6)'; (e.currentTarget as HTMLElement).style.color = '#7ba4ff'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 12px rgba(67,97,238,0.25)'; (e.currentTarget as HTMLElement).style.color = '#4361ee'; }}
         >
-          {isCollapsed ? <ChevronRight style={{ width: 14, height: 14 }} /> : <ChevronLeft style={{ width: 14, height: 14 }} />}
+          {isCollapsed ? <ChevronRight style={{ width: 13, height: 13 }} /> : <ChevronLeft style={{ width: 13, height: 13 }} />}
         </button>
 
         {/* Nav - WORKSPACE */}
@@ -235,71 +239,77 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           ))}
         </nav>
 
-        {/* Upgrade Widget */}
+        {/* Upgrade Widget — Solid Brand-color Highlighted Card */}
         {!isCollapsed && (
           <div style={{
-            margin: '0 14px 8px',
-            padding: '14px',
-            borderRadius: 12,
-            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(139, 92, 246, 0.12) 100%)',
-            border: '1px solid rgba(59, 130, 246, 0.15)',
+            margin: '0 14px 10px',
+            padding: '14px 16px',
+            borderRadius: 14,
+            background: 'linear-gradient(135deg, #4361ee 0%, #7b2fff 100%)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            boxShadow: '0 8px 24px rgba(67, 97, 238, 0.25)',
+            position: 'relative', overflow: 'hidden',
           }}>
+            {/* Gloss overlay */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(180deg, rgba(255,255,255,0.15), transparent)', borderRadius: '14px 14px 0 0', pointerEvents: 'none' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
-                width: 32, height: 32, borderRadius: 8,
-                background: 'rgba(59, 130, 246, 0.2)',
+                width: 32, height: 32, borderRadius: 9,
+                background: 'rgba(255, 255, 255, 0.2)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#60a5fa', flexShrink: 0,
+                color: 'white', flexShrink: 0,
               }}>
-                <Crown style={{ width: 16, height: 16 }} />
+                <Crown style={{ width: 15, height: 15, color: '#ffffff' }} />
               </div>
               <div>
-                <p style={{ fontSize: 12, fontWeight: 700, color: '#f1f5f9' }}>Upgrade Pro</p>
-                <p style={{ fontSize: 10, color: '#64748b' }}>Unlock all features</p>
+                <p style={{ fontSize: 12, fontWeight: 700, color: '#ffffff', letterSpacing: '-0.01em' }}>Upgrade Pro</p>
+                <p style={{ fontSize: 10, color: '#e0e7ff', fontWeight: 500, marginTop: 1 }}>Unlock all features</p>
               </div>
             </div>
           </div>
         )}
 
         {/* Profile Section */}
-        <div style={{ padding: isCollapsed ? '12px 10px' : '12px 14px', borderTop: '1px solid var(--sidebar-border)', position: 'relative' }}>
+        <div style={{ padding: isCollapsed ? '12px 10px' : '12px 14px', borderTop: '1px solid rgba(67,97,238,0.1)', position: 'relative' }}>
           <button
             onClick={() => setIsProfileOpen(!isProfileOpen)}
             style={{
               width: '100%', display: 'flex', alignItems: 'center',
               gap: isCollapsed ? 0 : 10,
               justifyContent: isCollapsed ? 'center' : 'flex-start',
-              padding: '8px',
-              borderRadius: 10,
+              padding: '8px 10px',
+              borderRadius: 12,
               background: 'transparent',
               border: 'none', cursor: 'pointer',
-              transition: 'background 150ms ease',
+              transition: 'all 150ms ease',
             }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--sidebar-hover)'}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(67,97,238,0.10)'}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
           >
             <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+              width: 34, height: 34, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #4361ee 0%, #7b2fff 100%)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontSize: 12, fontWeight: 800, flexShrink: 0,
+              color: 'white', fontSize: 13, fontWeight: 700, flexShrink: 0,
               position: 'relative',
+              boxShadow: '0 0 14px rgba(67,97,238,0.5)',
             }}>
               {session.firstName ? session.firstName[0].toUpperCase() : 'N'}
               {/* Green online dot */}
               <span style={{
                 position: 'absolute', bottom: -1, right: -1,
                 width: 10, height: 10, borderRadius: '50%',
-                background: '#10b981', border: '2px solid var(--sidebar-bg)',
+                background: '#06d6a0', border: '2px solid var(--sidebar-bg)',
+                boxShadow: '0 0 8px rgba(6,214,160,0.6)',
               }} />
             </div>
             {!isCollapsed && (
               <>
                 <div style={{ textAlign: 'left', minWidth: 0, flex: 1 }}>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {session.firstName} {session.lastName}
                   </p>
-                  <p style={{ fontSize: 10, color: '#64748b', fontWeight: 500, textTransform: 'capitalize' }}>{session.role === 'founder' ? 'Admin' : session.role}</p>
+                  <p style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, textTransform: 'capitalize' }}>{session.role === 'founder' ? 'Admin' : session.role}</p>
                 </div>
                 <MoreVertical style={{ width: 14, height: 14, color: '#64748b', flexShrink: 0 }} />
               </>
@@ -360,18 +370,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* ═══════════════════════════════════════════════════════════
-          MAIN CONTENT
+          MAIN CONTENT — offset by sidebar width
           ═══════════════════════════════════════════════════════════ */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div
+        className="flex flex-col min-w-0 h-full flex-1"
+      >
 
         {/* ── Top Header Bar ─────────────────────────────────────── */}
         <header
           style={{
-            height: 56, display: 'flex', alignItems: 'center',
-            justifyContent: 'space-between', padding: '0 24px',
-            background: 'var(--bg-secondary)',
+            height: 60, display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between', padding: '0 28px',
+            background: 'var(--bg-card)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
             borderBottom: '1px solid var(--border-primary)',
             flexShrink: 0,
+            position: 'sticky',
+            top: 0,
+            zIndex: 30,
           }}
         >
           {/* Left: Mobile Menu + Breadcrumb */}
@@ -446,7 +463,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     position: 'absolute', top: 4, right: 4,
                     width: 16, height: 16, borderRadius: '50%',
                     background: '#ef4444', color: 'white',
-                    fontSize: 9, fontWeight: 800,
+                    fontSize: 9, fontWeight: 700,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>{unreadCount}</span>
                 )}
@@ -465,10 +482,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   }}
                 >
                   <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-primary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)' }}>Notifications</span>
+                    <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>Notifications</span>
                     <button
                       onClick={markAllRead}
-                      style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer' }}
+                      style={{ fontSize: 11, fontWeight: 500, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer' }}
                     >Mark all read</button>
                   </div>
                   <div style={{ maxHeight: 320, overflowY: 'auto' }}>
@@ -524,7 +541,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 width: 32, height: 32, borderRadius: '50%',
                 background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontSize: 12, fontWeight: 800, cursor: 'pointer',
+                color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer',
                 boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
               }}
             >
@@ -552,9 +569,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     width: 32, height: 32, borderRadius: 8,
                     background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'white', fontWeight: 800, fontSize: 14,
+                    color: 'white', fontWeight: 700, fontSize: 14,
                   }}>B</div>
-                  <span style={{ fontWeight: 800, fontSize: 14, color: '#f1f5f9' }}>BB24</span>
+                  <span style={{ fontWeight: 700, fontSize: 14, color: '#f1f5f9' }}>BB24</span>
                 </div>
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -579,7 +596,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                   padding: '10px', borderRadius: 10, border: 'none',
                   background: 'rgba(239, 68, 68, 0.12)', color: '#ef4444',
-                  fontSize: 13, fontWeight: 600, cursor: 'pointer', marginTop: 12,
+                  fontSize: 13, fontWeight: 500, cursor: 'pointer', marginTop: 12,
                 }}
               >
                 <LogOut style={{ width: 16, height: 16 }} /> Logout
@@ -614,7 +631,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   }}
                 />
                 <kbd style={{
-                  fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 5,
+                  fontSize: 10, fontWeight: 500, padding: '3px 8px', borderRadius: 5,
                   background: 'var(--bg-tertiary)', border: '1px solid var(--border-primary)',
                   color: 'var(--text-muted)',
                 }}>ESC</kbd>

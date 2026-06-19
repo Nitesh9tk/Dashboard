@@ -24,30 +24,41 @@ export const authHelper = {
   async signIn(email: string, password?: string, isDemoLogin = false): Promise<{ success: boolean; error?: string; session?: UserSession }> {
     if (isDemoLogin || !this.isSupabaseConfigured()) {
       if (typeof window !== 'undefined') {
+        const targetDemoUsers = [
+          { email: 'ceo@bb24.agency', password: 'admin', role: 'founder', name: 'Nitesh Sharma', phone: '+91 98765 43210' },
+          { email: 'ceo.bb24.agency@gmail.com', password: 'admin', role: 'founder', name: 'Nitesh Sharma', phone: '+91 98765 43210' },
+          // Employees
+          { email: 'divyansh@bb24.agency', password: 'password', role: 'employee', name: 'Divyansh' },
+          { email: 'govind@bb24.agency', password: 'password', role: 'employee', name: 'Govind' },
+          { email: 'kavya@bb24.agency', password: 'password', role: 'employee', name: 'Kavya' },
+          { email: 'amit@bb24.agency', password: 'password', role: 'employee', name: 'Amit' },
+          { email: 'nitin@bb24.agency', password: 'password', role: 'employee', name: 'Nitin' },
+          // Clients
+          { email: 'gsayurveda@email.com', password: 'password', role: 'client', name: 'GS Ayurveda Team' },
+          { email: 'ashvastra@email.com', password: 'password', role: 'client', name: 'Ashvastra Team' },
+          { email: 'chillqubig@email.com', password: 'password', role: 'client', name: 'Chillqubig Team' },
+          { email: 'oncoadvisor@email.com', password: 'password', role: 'client', name: 'OncoAdvisor Team' },
+          { email: 'spevents@email.com', password: 'password', role: 'client', name: 'SP Events Team' },
+          { email: 'wellavitta@email.com', password: 'password', role: 'client', name: 'WellaVitta Team' },
+        ];
+
         const userBaseStr = localStorage.getItem('bb24_user_base');
         let userBase = userBaseStr ? JSON.parse(userBaseStr) : [];
 
-        if (userBase.length === 0) {
-          // Seed initial user base
-          userBase = [
-            { email: 'ceo@bb24.agency', password: 'admin', role: 'founder', name: 'Nitesh Sharma', phone: '+91 98765 43210' },
-            { email: 'ceo.bb24.agency@gmail.com', password: 'admin', role: 'founder', name: 'Nitesh Sharma', phone: '+91 98765 43210' },
-            // Employees
-            { email: 'divyansh@bb24.agency', password: 'password', role: 'employee', name: 'Divyansh' },
-            { email: 'govind@bb24.agency', password: 'password', role: 'employee', name: 'Govind' },
-            { email: 'kavya@bb24.agency', password: 'password', role: 'employee', name: 'Kavya' },
-            { email: 'amit@bb24.agency', password: 'password', role: 'employee', name: 'Amit' },
-            { email: 'nitin@bb24.agency', password: 'password', role: 'employee', name: 'Nitin' },
-            // Clients
-            { email: 'gsayurveda@email.com', password: 'password', role: 'client', name: 'GS Ayurveda Team' },
-            { email: 'ashvastra@email.com', password: 'password', role: 'client', name: 'Ashvastra Team' },
-            { email: 'chillqubig@email.com', password: 'password', role: 'client', name: 'Chillqubig Team' },
-            { email: 'oncoadvisor@email.com', password: 'password', role: 'client', name: 'OncoAdvisor Team' },
-            { email: 'spevents@email.com', password: 'password', role: 'client', name: 'SP Events Team' },
-            { email: 'wellavitta@email.com', password: 'password', role: 'client', name: 'WellaVitta Team' },
-          ];
-          localStorage.setItem('bb24_user_base', JSON.stringify(userBase));
-        }
+        // Force align target demo users to ensure correct roles/credentials
+        targetDemoUsers.forEach(target => {
+          const idx = userBase.findIndex((u: any) => u.email.toLowerCase() === target.email.toLowerCase());
+          if (idx !== -1) {
+            userBase[idx].role = target.role;
+            if (['ceo@bb24.agency', 'gsayurveda@email.com', 'kavya@bb24.agency'].includes(target.email)) {
+              userBase[idx].password = target.password;
+              userBase[idx].name = target.name;
+            }
+          } else {
+            userBase.push(target);
+          }
+        });
+        localStorage.setItem('bb24_user_base', JSON.stringify(userBase));
 
         const loginEmail = email ? email.toLowerCase().trim() : '';
         const matchedUser = userBase.find((u: any) => u.email.toLowerCase() === loginEmail);

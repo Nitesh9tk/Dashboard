@@ -192,7 +192,7 @@ export default function TeamHub() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-primary pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-text-primary">Team Management</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-text-primary">Team Management</h1>
           <p className="text-text-secondary text-sm mt-1">Oversee employee directories, organizational structures, workloads, and leave policies.</p>
         </div>
         {session?.role === 'founder' && (
@@ -317,11 +317,11 @@ export default function TeamHub() {
 
                 {/* Info summary */}
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-brand-primary flex items-center justify-center text-white font-extrabold">
+                  <div className="h-10 w-10 rounded-full bg-brand-primary flex items-center justify-center text-white font-bold">
                     {selectedEmployee.name.charAt(0)}
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-xs text-text-primary">{selectedEmployee.name}</h4>
+                    <h4 className="font-semibold text-xs text-text-primary">{selectedEmployee.name}</h4>
                     <p className="text-[10px] text-text-secondary capitalize">{selectedEmployee.position}</p>
                   </div>
                 </div>
@@ -403,7 +403,7 @@ export default function TeamHub() {
             {/* Level 1: CEO */}
             <div className="flex flex-col items-center">
               <div className="p-4 bg-brand-primary/10 border-2 border-brand-primary rounded-xl text-center shadow-sm w-44">
-                <p className="font-extrabold text-xs text-brand-primary uppercase tracking-wider">CEO & Founder</p>
+                <p className="font-semibold text-xs text-brand-primary uppercase tracking-wider">CEO & Founder</p>
                 <h4 className="font-bold text-sm text-text-primary mt-1">
                   {session ? `${session.firstName} ${session.lastName}` : 'Nitesh Sharma'}
                 </h4>
@@ -450,7 +450,7 @@ export default function TeamHub() {
           
           {/* Leaves List */}
           <div className="lg:col-span-2 card bg-bg-secondary p-5 space-y-4">
-            <h3 className="font-extrabold text-sm text-text-primary border-b border-border-primary pb-3.5">
+            <h3 className="font-semibold text-sm text-text-primary border-b border-border-primary pb-3.5">
               Leave Requests & History
             </h3>
 
@@ -506,13 +506,13 @@ export default function TeamHub() {
 
           {/* Request Leave Form */}
           <div className="card bg-bg-secondary p-5 space-y-4">
-            <h3 className="font-extrabold text-sm text-text-primary border-b border-border-primary pb-3.5">
+            <h3 className="font-semibold text-sm text-text-primary border-b border-border-primary pb-3.5">
               Request Time Off
             </h3>
             
             <form onSubmit={handleAddLeave} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-text-secondary">Leave Category</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5 text-text-secondary">Leave Category</label>
                 <select
                   value={leaveType} onChange={e => setLeaveType(e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-lg border border-border-primary bg-bg-tertiary text-text-primary outline-none focus:border-brand-primary cursor-pointer"
@@ -526,14 +526,14 @@ export default function TeamHub() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-text-secondary">Start Date</label>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5 text-text-secondary">Start Date</label>
                   <input
                     type="date" required value={leaveStart} onChange={e => setLeaveStart(e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-lg border border-border-primary bg-bg-tertiary text-text-primary outline-none focus:border-brand-primary cursor-pointer"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider mb-1.5 text-text-secondary">End Date</label>
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5 text-text-secondary">End Date</label>
                   <input
                     type="date" required value={leaveEnd} onChange={e => setLeaveEnd(e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-lg border border-border-primary bg-bg-tertiary text-text-primary outline-none focus:border-brand-primary cursor-pointer"
@@ -543,7 +543,7 @@ export default function TeamHub() {
 
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-lg text-xs font-bold text-white bg-brand-primary hover:opacity-90 transition-all shadow-sm cursor-pointer"
+                className="w-full py-2.5 rounded-lg text-xs font-semibold text-white bg-brand-primary hover:opacity-90 transition-all shadow-sm cursor-pointer"
               >
                 Submit Request
               </button>
@@ -559,7 +559,7 @@ export default function TeamHub() {
             
             <div className="flex justify-between items-center pb-4 border-b border-border-primary mb-5">
               <div>
-                <h3 className="font-extrabold text-base text-text-primary">Add Team Account</h3>
+                <h3 className="font-semibold text-base text-text-primary">Add Team Account</h3>
                 <p className="text-xs text-text-secondary mt-0.5">Invite new payroll staff or client managers.</p>
               </div>
               <button

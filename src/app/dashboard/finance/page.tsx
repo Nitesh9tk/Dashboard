@@ -257,7 +257,7 @@ export default function FinanceHub() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-primary pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-text-primary">Finance Hub</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-text-primary">Finance Hub</h1>
           <p className="text-text-secondary text-sm mt-1">Track monthly profit & loss statements, generate clients billing, and monitor payroll expenses.</p>
         </div>
         {session?.role === 'founder' && (
@@ -314,8 +314,8 @@ export default function FinanceHub() {
               return (
                 <div key={i} className="card p-4 flex items-center justify-between bg-bg-secondary">
                   <div>
-                    <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block">{stat.label}</span>
-                    <span className="text-lg font-extrabold text-text-primary block mt-1">{stat.value}</span>
+                    <span className="text-[10px] text-text-muted font-semibold uppercase tracking-wider block">{stat.label}</span>
+                    <span className="text-lg font-bold text-text-primary block mt-1">{stat.value}</span>
                     <span className="text-[10px] text-text-secondary block mt-0.5">{stat.sub}</span>
                   </div>
                   <div className="p-2.5 rounded-lg flex items-center justify-center shrink-0" style={{ background: stat.color + '15', color: stat.color }}>
@@ -337,8 +337,8 @@ export default function FinanceHub() {
               return (
                 <div key={i} className="card p-4 flex items-center justify-between bg-bg-secondary">
                   <div>
-                    <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block">{stat.label}</span>
-                    <span className="text-lg font-extrabold text-text-primary block mt-1">{stat.value}</span>
+                    <span className="text-[10px] text-text-muted font-semibold uppercase tracking-wider block">{stat.label}</span>
+                    <span className="text-lg font-bold text-text-primary block mt-1">{stat.value}</span>
                     <span className="text-[10px] text-text-secondary block mt-0.5">{stat.sub}</span>
                   </div>
                   <div className="p-2.5 rounded-lg flex items-center justify-center shrink-0" style={{ background: stat.color + '15', color: stat.color }}>
@@ -374,7 +374,7 @@ export default function FinanceHub() {
           
           {/* Main Statement */}
           <div className="lg:col-span-2 card bg-bg-secondary p-5 space-y-4">
-            <h3 className="font-extrabold text-sm text-text-primary border-b border-border-primary pb-3.5">
+            <h3 className="font-semibold text-sm text-text-primary border-b border-border-primary pb-3.5">
               Income Statement (Profit & Loss)
             </h3>
             
@@ -429,7 +429,7 @@ export default function FinanceHub() {
 
           {/* Side: Category Breakdown */}
           <div className="card bg-bg-secondary p-5 space-y-4">
-            <h3 className="font-extrabold text-sm text-text-primary border-b border-border-primary pb-3.5">
+            <h3 className="font-semibold text-sm text-text-primary border-b border-border-primary pb-3.5">
               Expense Distribution
             </h3>
             
@@ -450,8 +450,8 @@ export default function FinanceHub() {
                     strokeDasharray="20 100" strokeDashoffset="-80" />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-base font-extrabold text-text-primary">₹{totalExpenses.toLocaleString('en-IN')}</span>
-                  <span className="text-[8px] uppercase tracking-wider text-text-muted font-bold">Total Cost</span>
+                  <span className="text-base font-bold text-text-primary">₹{totalExpenses.toLocaleString('en-IN')}</span>
+                  <span className="text-[8px] uppercase tracking-wider text-text-muted font-semibold">Total Cost</span>
                 </div>
               </div>
             </div>
@@ -468,7 +468,7 @@ export default function FinanceHub() {
                     <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: item.color }} />
                     <span className="text-text-secondary font-medium">{item.name}</span>
                   </div>
-                  <span className="font-extrabold text-text-primary">₹{item.amt.toLocaleString('en-IN')}</span>
+                  <span className="font-semibold text-text-primary">₹{item.amt.toLocaleString('en-IN')}</span>
                 </div>
               ))}
             </div>
@@ -525,7 +525,7 @@ export default function FinanceHub() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-extrabold text-sm text-text-primary">{inv.invoiceNumber}</span>
+                            <span className="font-semibold text-sm text-text-primary">{inv.invoiceNumber}</span>
                             <span className={`text-[9px] font-bold px-2.5 py-0.5 rounded-full capitalize ${
                               inv.status === 'paid' ? 'bg-success-light text-success' :
                               inv.status === 'overdue' ? 'bg-danger-light text-danger' : 'bg-warning-light text-warning'
@@ -543,7 +543,7 @@ export default function FinanceHub() {
                           <p className="text-xs font-semibold text-text-primary">{inv.dueDate}</p>
                         </div>
                         <div className="flex items-center gap-4">
-                          <span className="font-extrabold text-sm text-text-primary">₹{inv.amount.toLocaleString('en-IN')}</span>
+                          <span className="font-semibold text-sm text-text-primary">₹{inv.amount.toLocaleString('en-IN')}</span>
                           {session?.role === 'founder' && (
                             <button
                               onClick={e => { e.stopPropagation(); handleToggleInvoicePaid(inv); }}
@@ -616,7 +616,7 @@ export default function FinanceHub() {
           
           {/* Expenses List */}
           <div className="lg:col-span-2 card bg-bg-secondary p-5 space-y-4">
-            <h3 className="font-extrabold text-sm text-text-primary border-b border-border-primary pb-3.5">
+            <h3 className="font-semibold text-sm text-text-primary border-b border-border-primary pb-3.5">
               Operating Expenditure List
             </h3>
 
@@ -659,7 +659,7 @@ export default function FinanceHub() {
 
           {/* Quick Expense Rules card */}
           <div className="card bg-bg-secondary p-5 space-y-4">
-            <h3 className="font-extrabold text-sm text-text-primary border-b border-border-primary pb-3.5">
+            <h3 className="font-semibold text-sm text-text-primary border-b border-border-primary pb-3.5">
               Policy & Payroll Info
             </h3>
             <div className="space-y-3 text-xs text-text-secondary">
@@ -678,7 +678,7 @@ export default function FinanceHub() {
             
             <div className="flex justify-between items-center pb-4 border-b border-border-primary mb-5">
               <div>
-                <h3 className="font-extrabold text-base text-text-primary">Create Client Invoice</h3>
+                <h3 className="font-semibold text-base text-text-primary">Create Client Invoice</h3>
                 <p className="text-xs text-text-secondary mt-0.5">Generate client billing request parameters.</p>
               </div>
               <button
@@ -765,7 +765,7 @@ export default function FinanceHub() {
             
             <div className="flex justify-between items-center pb-4 border-b border-border-primary mb-5">
               <div>
-                <h3 className="font-extrabold text-base text-text-primary">Log Operational Expense</h3>
+                <h3 className="font-semibold text-base text-text-primary">Log Operational Expense</h3>
                 <p className="text-xs text-text-secondary mt-0.5">Input receipts data for EBITDA statements.</p>
               </div>
               <button
