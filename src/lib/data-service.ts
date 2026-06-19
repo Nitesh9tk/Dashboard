@@ -23,6 +23,20 @@ const KEYS = {
 function initializeLocalStorage() {
   if (typeof window === 'undefined') return;
 
+  const DB_VERSION = '3';
+  if (localStorage.getItem('bb24_db_version') !== DB_VERSION) {
+    localStorage.setItem(KEYS.CLIENTS, JSON.stringify(mockClients));
+    localStorage.setItem(KEYS.LEADS, JSON.stringify(mockLeads));
+    localStorage.setItem(KEYS.PROJECTS, JSON.stringify(mockProjects));
+    localStorage.setItem(KEYS.TASKS, JSON.stringify(mockTasks));
+    localStorage.setItem(KEYS.INVOICES, JSON.stringify(mockInvoices));
+    localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(mockEmployees));
+    localStorage.setItem(KEYS.MEETINGS, JSON.stringify(mockMeetings));
+    localStorage.setItem(KEYS.EXPENSES, JSON.stringify(mockExpenses));
+    localStorage.setItem('bb24_db_version', DB_VERSION);
+    return;
+  }
+
   if (!localStorage.getItem(KEYS.CLIENTS)) {
     localStorage.setItem(KEYS.CLIENTS, JSON.stringify(mockClients));
   }
@@ -375,6 +389,55 @@ export const dataService = {
       console.warn('Supabase tasks fetch failed, using LocalStorage', err);
       return getLocal<MockTask>(KEYS.TASKS, mockTasks);
     }
+  },
+
+  async saveTask(task: MockTask): Promise<MockTask> {
+    const list = getLocal<MockTask>(KEYS.TASKS, mockTasks);
+    const index = list.findIndex(t => t.id === task.id);
+    if (index > -1) {
+      list[index] = task;
+    } else {
+      list.unshift(task);
+    }
+    saveLocal(KEYS.TASKS, list);
+
+    if (this.isOnline()) {
+      try {
+        const payload = {
+          project_id: task.projectId,
+          title: task.title,
+          priority: task.priority,
+          status: task.status,
+          due_date: task.dueDate || null,
+          assigned_to: task.assignedTo,
+        };
+
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(task.id);
+        if (isUUID) {
+          await supabase.from('tasks').update(payload).eq('id', task.id);
+        } else {
+          await supabase.from('tasks').insert([payload]);
+        }
+      } catch (err) {
+        console.warn('Supabase saveTask failed, saved locally only', err);
+      }
+    }
+    return task;
+  },
+
+  async removeTask(id: string): Promise<boolean> {
+    const list = getLocal<MockTask>(KEYS.TASKS, mockTasks);
+    const filtered = list.filter(t => t.id !== id);
+    saveLocal(KEYS.TASKS, filtered);
+
+    if (this.isOnline()) {
+      try {
+        await supabase.from('tasks').delete().eq('id', id);
+      } catch (err) {
+        console.warn('Supabase removeTask failed, removed locally only', err);
+      }
+    }
+    return true;
   },
 
   // ─── INVOICES ───────────────────────────────────────────────────────

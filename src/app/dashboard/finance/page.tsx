@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { dataService } from '@/lib/data-service';
+import { authHelper } from '@/lib/auth';
 import { MockClient, MockInvoice, MockExpense, MockEmployee } from '@/lib/mock-data';
 import {
   IndianRupee, TrendingUp, TrendingDown, Wallet, AlertCircle,
@@ -24,6 +25,7 @@ export default function FinanceHub() {
   const [expenses, setExpenses] = useState<MockExpense[]>([]);
   const [employees, setEmployees] = useState<MockEmployee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<any>(null);
 
   // Form States (New Invoice)
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
@@ -76,6 +78,13 @@ export default function FinanceHub() {
   };
 
   useEffect(() => {
+    const active = authHelper.getCurrentSession();
+    if (active) {
+      setSession(active);
+      if (active.role === 'client') {
+        setActiveTab('invoices');
+      }
+    }
     loadFinanceData();
   }, []);
 
@@ -219,6 +228,12 @@ export default function FinanceHub() {
 
   // Filter invoices
   const filteredInvoices = invoices.filter(inv => {
+    if (session?.role === 'client') {
+      const clientName = session.organizationName || '';
+      const isMatch = inv.clientName.toLowerCase() === clientName.toLowerCase() || 
+                      inv.clientName.toLowerCase().includes(session.firstName.toLowerCase());
+      if (!isMatch) return false;
+    }
     const matchesSearch = inv.clientName.toLowerCase().includes(invoiceSearch.toLowerCase()) ||
                           inv.invoiceNumber.toLowerCase().includes(invoiceSearch.toLowerCase());
     const matchesFilter = invoiceFilter === 'all' ? true : inv.status === invoiceFilter;
@@ -245,57 +260,103 @@ export default function FinanceHub() {
           <h1 className="text-3xl font-extrabold tracking-tight text-text-primary">Finance Hub</h1>
           <p className="text-text-secondary text-sm mt-1">Track monthly profit & loss statements, generate clients billing, and monitor payroll expenses.</p>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={exportReport}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-bg-secondary text-text-secondary hover:text-text-primary text-xs font-semibold rounded-lg border border-border-primary transition-all cursor-pointer"
-          >
-            <Download className="h-4 w-4" />
-            Export Data
-          </button>
-          <button
-            onClick={() => {
-              if (activeTab === 'expenses') setIsExpenseModalOpen(true);
-              else setIsInvoiceModalOpen(true);
-            }}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-primary text-white hover:opacity-90 text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer animate-pulse-soft"
-          >
-            <Plus className="h-4 w-4" />
-            {activeTab === 'expenses' ? 'Log Expense' : 'Create Invoice'}
-          </button>
-        </div>
+        {session?.role === 'founder' && (
+          <div className="flex gap-2">
+            <button
+              onClick={exportReport}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-bg-secondary text-text-secondary hover:text-text-primary text-xs font-semibold rounded-lg border border-border-primary transition-all cursor-pointer"
+            >
+              <Download className="h-4 w-4" />
+              Export Data
+            </button>
+            <button
+              onClick={() => {
+                if (activeTab === 'expenses') setIsExpenseModalOpen(true);
+                else setIsInvoiceModalOpen(true);
+              }}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-primary text-white hover:opacity-90 text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer animate-pulse-soft"
+            >
+              <Plus className="h-4 w-4" />
+              {activeTab === 'expenses' ? 'Log Expense' : 'Create Invoice'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── KPI Grid ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: 'Receipts (Collected)', value: `₹${totalReceived.toLocaleString('en-IN')}`, sub: 'Cash collections this month', icon: CheckCircle, color: 'var(--success)' },
-          { label: 'Outstanding Invoices', value: `₹${totalBalance.toLocaleString('en-IN')}`, sub: 'Pending cash intake', icon: Clock, color: 'var(--warning)' },
-          { label: 'Operational Costs', value: `₹${totalExpenses.toLocaleString('en-IN')}`, sub: 'Salaries + operational bills', icon: TrendingDown, color: 'var(--danger)' },
-          { label: 'Net Profit Margin', value: `₹${netProfit.toLocaleString('en-IN')}`, sub: `${margin}% margin index`, icon: TrendingUp, color: 'var(--accent)' },
-        ].map((stat, i) => {
-          const Icon = stat.icon;
-          return (
-            <div key={i} className="card p-4 flex items-center justify-between bg-bg-secondary">
-              <div>
-                <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block">{stat.label}</span>
-                <span className="text-lg font-extrabold text-text-primary block mt-1">{stat.value}</span>
-                <span className="text-[10px] text-text-secondary block mt-0.5">{stat.sub}</span>
-              </div>
-              <div className="p-2.5 rounded-lg flex items-center justify-center shrink-0" style={{ background: stat.color + '15', color: stat.color }}>
-                <Icon className="h-5 w-5" />
-              </div>
-            </div>
-          );
-        })}
+        {session?.role === 'client' ? (
+          <>
+            {[
+              { 
+                label: 'Monthly Retainer', 
+                value: `₹${(clients.find(c => c.companyName.toLowerCase() === (session.organizationName || '').toLowerCase() || c.companyName.toLowerCase().includes(session.firstName.toLowerCase()))?.monthlyFee || 0).toLocaleString('en-IN')}`, 
+                sub: 'Contract rate', 
+                icon: Wallet, 
+                color: 'var(--accent)' 
+              },
+              { 
+                label: 'Total Paid', 
+                value: `₹${invoices.filter(i => (i.clientName.toLowerCase() === (session.organizationName || '').toLowerCase() || i.clientName.toLowerCase().includes(session.firstName.toLowerCase())) && i.status === 'paid').reduce((s, i) => s + i.amount, 0).toLocaleString('en-IN')}`, 
+                sub: 'Settled receipts', 
+                icon: CheckCircle, 
+                color: 'var(--success)' 
+              },
+              { 
+                label: 'Outstanding Balance', 
+                value: `₹${invoices.filter(i => (i.clientName.toLowerCase() === (session.organizationName || '').toLowerCase() || i.clientName.toLowerCase().includes(session.firstName.toLowerCase())) && i.status !== 'paid').reduce((s, i) => s + i.amount, 0).toLocaleString('en-IN')}`, 
+                sub: 'Pending payment', 
+                icon: Clock, 
+                color: 'var(--warning)' 
+              },
+            ].map((stat, i) => {
+              const Icon = stat.icon;
+              return (
+                <div key={i} className="card p-4 flex items-center justify-between bg-bg-secondary">
+                  <div>
+                    <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block">{stat.label}</span>
+                    <span className="text-lg font-extrabold text-text-primary block mt-1">{stat.value}</span>
+                    <span className="text-[10px] text-text-secondary block mt-0.5">{stat.sub}</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg flex items-center justify-center shrink-0" style={{ background: stat.color + '15', color: stat.color }}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        ) : (
+          <>
+            {[
+              { label: 'Receipts (Collected)', value: `₹${totalReceived.toLocaleString('en-IN')}`, sub: 'Cash collections this month', icon: CheckCircle, color: 'var(--success)' },
+              { label: 'Outstanding Invoices', value: `₹${totalBalance.toLocaleString('en-IN')}`, sub: 'Pending cash intake', icon: Clock, color: 'var(--warning)' },
+              { label: 'Operational Costs', value: `₹${totalExpenses.toLocaleString('en-IN')}`, sub: 'Salaries + operational bills', icon: TrendingDown, color: 'var(--danger)' },
+              { label: 'Net Profit Margin', value: `₹${netProfit.toLocaleString('en-IN')}`, sub: `${margin}% margin index`, icon: TrendingUp, color: 'var(--accent)' },
+            ].map((stat, i) => {
+              const Icon = stat.icon;
+              return (
+                <div key={i} className="card p-4 flex items-center justify-between bg-bg-secondary">
+                  <div>
+                    <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block">{stat.label}</span>
+                    <span className="text-lg font-extrabold text-text-primary block mt-1">{stat.value}</span>
+                    <span className="text-[10px] text-text-secondary block mt-0.5">{stat.sub}</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg flex items-center justify-center shrink-0" style={{ background: stat.color + '15', color: stat.color }}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
       </div>
 
       {/* ── Tabs selector ── */}
       <div className="flex gap-1 p-1 rounded-xl w-fit bg-bg-tertiary">
-        {TABS.map(t => (
+        {(session?.role === 'client' ? [{ id: 'invoices', label: 'My Invoices' }] : TABS).map(t => (
           <button
             key={t.id}
-            onClick={() => setActiveTab(t.id)}
+            onClick={() => setActiveTab(t.id as any)}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === t.id
                 ? 'bg-bg-secondary text-brand-primary shadow-sm'
@@ -483,16 +544,18 @@ export default function FinanceHub() {
                         </div>
                         <div className="flex items-center gap-4">
                           <span className="font-extrabold text-sm text-text-primary">₹{inv.amount.toLocaleString('en-IN')}</span>
-                          <button
-                            onClick={e => { e.stopPropagation(); handleToggleInvoicePaid(inv); }}
-                            className={`px-3 py-1.5 text-[10px] font-bold rounded-lg border transition-all cursor-pointer ${
-                              inv.status === 'paid'
-                                ? 'bg-bg-tertiary border-border-primary text-text-secondary'
-                                : 'bg-success-light border-transparent text-success hover:opacity-90'
-                            }`}
-                          >
-                            {inv.status === 'paid' ? 'Mark Unpaid' : 'Mark Paid'}
-                          </button>
+                          {session?.role === 'founder' && (
+                            <button
+                              onClick={e => { e.stopPropagation(); handleToggleInvoicePaid(inv); }}
+                              className={`px-3 py-1.5 text-[10px] font-bold rounded-lg border transition-all cursor-pointer ${
+                                inv.status === 'paid'
+                                  ? 'bg-bg-tertiary border-border-primary text-text-secondary'
+                                  : 'bg-success-light border-transparent text-success hover:opacity-90'
+                              }`}
+                            >
+                              {inv.status === 'paid' ? 'Mark Unpaid' : 'Mark Paid'}
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -502,12 +565,14 @@ export default function FinanceHub() {
                       <div className="p-4 bg-bg-tertiary/30 border-t border-border-primary space-y-4 animate-slide-down">
                         <div className="flex justify-between items-center">
                           <h4 className="text-xs font-bold text-text-primary uppercase tracking-wider">Invoice Timeline</h4>
-                          <button
-                            onClick={() => handleRemoveInvoice(inv.id)}
-                            className="text-[10px] font-bold text-danger flex items-center gap-1 hover:underline cursor-pointer"
-                          >
-                            <Trash2 className="h-3 w-3" /> Delete Invoice
-                          </button>
+                          {session?.role === 'founder' && (
+                            <button
+                              onClick={() => handleRemoveInvoice(inv.id)}
+                              className="text-[10px] font-bold text-danger flex items-center gap-1 hover:underline cursor-pointer"
+                            >
+                              <Trash2 className="h-3 w-3" /> Delete Invoice
+                            </button>
+                          )}
                         </div>
 
                         {/* Beautiful Timeline track */}

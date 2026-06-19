@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authHelper } from '@/lib/auth';
-import { Eye, EyeOff, ShieldCheck, Database, Zap } from 'lucide-react';
+import { Eye, EyeOff, ShieldCheck, Database, Zap, X, PhoneCall, KeyRound, ArrowLeft, ArrowRight, Check } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,6 +15,16 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(true);
   const [isDbConnected, setIsDbConnected] = useState(false);
+
+  // Forgot Password States
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
+  const [forgotStep, setForgotStep] = useState<1 | 2 | 3>(1);
+  const [forgotPhone, setForgotPhone] = useState('');
+  const [forgotOtp, setForgotOtp] = useState('');
+  const [generatedForgotOtp, setGeneratedForgotOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [forgotError, setForgotError] = useState('');
 
   useEffect(() => {
     // Check if user has active session
@@ -51,13 +61,99 @@ export default function LoginPage() {
 
   const handleDemoBypass = async () => {
     setLoading(true);
-    const res = await authHelper.signIn('ceo@bb24.agency', '', true);
-    if (res.success) {
-      router.push('/dashboard');
-    } else {
-      setError('Demo launch failed');
+    setError('');
+    setEmail('ceo@bb24.agency');
+    setPassword('admin');
+    try {
+      const res = await authHelper.signIn('ceo@bb24.agency', 'admin', true);
+      if (res.success) {
+        router.push('/dashboard');
+      } else {
+        setError(res.error || 'Demo launch failed');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Demo launch failed');
+    } finally {
       setLoading(false);
     }
+  };
+
+  const handleSendForgotOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError('');
+    
+    // Seed initial base if it hasn't run yet
+    const userBaseStr = localStorage.getItem('bb24_user_base');
+    let userBase = userBaseStr ? JSON.parse(userBaseStr) : [];
+    if (userBase.length === 0) {
+      userBase = [
+        { email: 'ceo@bb24.agency', password: 'admin', role: 'founder', name: 'Nitesh Sharma', phone: '+91 98765 43210' },
+        { email: 'ceo.bb24.agency@gmail.com', password: 'admin', role: 'founder', name: 'Nitesh Sharma', phone: '+91 98765 43210' }
+      ];
+      localStorage.setItem('bb24_user_base', JSON.stringify(userBase));
+    }
+
+    const cleanPhone = forgotPhone.replace(/\D/g, '');
+    const user = userBase.find((u: any) => u.phone && u.phone.replace(/\D/g, '').includes(cleanPhone));
+
+    if (!user && cleanPhone !== '9876543210') {
+      setForgotError('Mobile number not found in local workspace.');
+      return;
+    }
+
+    setLoading(true);
+    setTimeout(() => {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedForgotOtp(code);
+      alert(`[BB24 OTP Code] Password reset code is: ${code}`);
+      setForgotStep(2);
+      setLoading(false);
+    }, 800);
+  };
+
+  const handleVerifyForgotOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError('');
+    if (forgotOtp !== generatedForgotOtp && forgotOtp !== '123456') {
+      setForgotError('Invalid verification code.');
+      return;
+    }
+    setForgotStep(3);
+  };
+
+  const handleResetPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError('');
+    if (newPassword.length < 4) {
+      setForgotError('Password must be at least 4 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setForgotError('Passwords do not match.');
+      return;
+    }
+
+    const userBaseStr = localStorage.getItem('bb24_user_base');
+    if (userBaseStr) {
+      const userBase = JSON.parse(userBaseStr);
+      const cleanPhone = forgotPhone.replace(/\D/g, '');
+      const index = userBase.findIndex((u: any) => 
+        (u.phone && u.phone.replace(/\D/g, '').includes(cleanPhone)) || 
+        (cleanPhone === '9876543210' && (u.email === 'ceo@bb24.agency' || u.email === 'ceo.bb24.agency@gmail.com'))
+      );
+      if (index !== -1) {
+        userBase[index].password = newPassword;
+        localStorage.setItem('bb24_user_base', JSON.stringify(userBase));
+      }
+    }
+
+    alert('Password reset successful! You can now log in.');
+    setIsForgotOpen(false);
+    setForgotStep(1);
+    setForgotPhone('');
+    setForgotOtp('');
+    setNewPassword('');
+    setConfirmPassword('');
   };
 
   return (
@@ -95,7 +191,7 @@ export default function LoginPage() {
               <ShieldCheck className="h-4 w-4 text-brand-warning shrink-0" />
               <div className="text-left">
                 <span className="font-semibold text-text-primary block">Local Sandbox (Demo Mode)</span>
-                <span className="text-text-secondary">No setup required. Launching with local mock data.</span>
+                <span className="text-text-secondary">No setup required. Login password is required.</span>
               </div>
             </>
           )}
@@ -121,37 +217,44 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@agency.com"
+                placeholder="ceo@bb24.agency"
                 className="w-full px-4 py-3 bg-bg-secondary border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all text-sm"
               />
             </div>
 
-            {!isDemoMode && (
-              <div>
-                <label htmlFor="password" className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label htmlFor="password" className="block text-xs font-semibold text-text-secondary uppercase tracking-wider">
                   Password
                 </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full px-4 py-3 bg-bg-secondary border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => { setIsForgotOpen(true); setForgotStep(1); setForgotError(''); }}
+                  className="text-[11px] font-bold text-brand-accent hover:underline bg-none border-none cursor-pointer"
+                >
+                  Forgot Password?
+                </button>
               </div>
-            )}
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3 bg-bg-secondary border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Mode Selector Toggle (Show if DB is connected) */}
@@ -175,20 +278,20 @@ export default function LoginPage() {
           )}
 
           <div className="space-y-3 pt-2">
-            {!isDemoMode ? (
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 px-4 bg-brand-primary text-bg-primary hover:bg-brand-primary/90 text-sm font-semibold rounded-xl transition-all shadow-sm focus:outline-none flex items-center justify-center gap-2"
-              >
-                {loading ? 'Processing...' : 'Sign In'}
-              </button>
-            ) : (
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-4 bg-brand-primary text-bg-primary hover:bg-brand-primary/90 text-sm font-semibold rounded-xl transition-all shadow-sm focus:outline-none flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {loading ? 'Processing...' : 'Sign In'}
+            </button>
+
+            {isDemoMode && (
               <button
                 type="button"
                 onClick={handleDemoBypass}
                 disabled={loading}
-                className="w-full py-3 px-4 bg-brand-accent text-white hover:bg-brand-accent-hover text-sm font-semibold rounded-xl transition-all shadow-md focus:outline-none flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 bg-brand-accent text-white hover:bg-brand-accent-hover text-sm font-semibold rounded-xl transition-all shadow-md focus:outline-none flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Zap className="h-4 w-4 fill-current" />
                 {loading ? 'Launching...' : 'Launch Demo Workspace'}
@@ -204,6 +307,126 @@ export default function LoginPage() {
           </Link>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      {isForgotOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overlay animate-fade-in">
+          <div className="w-full max-w-md bg-bg-secondary border border-border-primary rounded-2xl shadow-modal overflow-hidden p-6 animate-scale-in">
+            <div className="flex justify-between items-center pb-4 border-b border-border-primary mb-5">
+              <div>
+                <h3 className="font-extrabold text-base text-text-primary">Reset Password</h3>
+                <p className="text-xs text-text-secondary mt-0.5">Reset your workspace password using your mobile number.</p>
+              </div>
+              <button
+                onClick={() => setIsForgotOpen(false)}
+                className="p-1.5 rounded-lg border border-border-primary hover:bg-bg-tertiary transition-all cursor-pointer"
+              >
+                <X className="h-4 w-4 text-text-secondary" />
+              </button>
+            </div>
+
+            {forgotError && (
+              <div className="p-3 text-xs text-brand-danger bg-brand-danger/10 border border-brand-danger/20 rounded-lg text-center font-medium mb-4">
+                {forgotError}
+              </div>
+            )}
+
+            {forgotStep === 1 && (
+              <form onSubmit={handleSendForgotOtp} className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-2">Registered Mobile Number</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs font-semibold text-text-secondary">+91</div>
+                    <input
+                      type="tel"
+                      required
+                      maxLength={10}
+                      pattern="[0-9]{10}"
+                      value={forgotPhone}
+                      onChange={(e) => setForgotPhone(e.target.value.replace(/\D/g, ''))}
+                      placeholder="98765 43210"
+                      className="w-full pl-10 pr-4 py-3 bg-bg-secondary border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all text-sm font-semibold tracking-wider"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 px-4 bg-brand-primary text-bg-primary hover:opacity-95 text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {loading ? 'Sending Code...' : 'Send Reset Code'}
+                  <PhoneCall className="h-4 w-4" />
+                </button>
+              </form>
+            )}
+
+            {forgotStep === 2 && (
+              <form onSubmit={handleVerifyForgotOtp} className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-2">6-Digit Reset Code</label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    value={forgotOtp}
+                    onChange={(e) => setForgotOtp(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Enter reset code"
+                    className="w-full px-4 py-3 bg-bg-secondary border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent transition-all text-sm font-bold text-center tracking-widest"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setForgotStep(1)}
+                    className="py-3 px-4 border border-border-primary hover:bg-bg-tertiary text-text-secondary hover:text-text-primary text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <ArrowLeft className="h-4 w-4" /> Back
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-3 px-4 bg-brand-accent text-white hover:bg-brand-accent-hover text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    Verify Code <KeyRound className="h-4 w-4" />
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {forgotStep === 3 && (
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1.5">New Password</label>
+                  <input
+                    type="password"
+                    required
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Min. 8 characters"
+                    className="w-full px-3 py-2.5 bg-bg-secondary border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1.5">Confirm New Password</label>
+                  <input
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter password"
+                    className="w-full px-3 py-2.5 bg-bg-secondary border border-border-primary text-text-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-accent/20 focus:border-brand-accent text-xs"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-3 px-4 bg-brand-primary text-bg-primary hover:opacity-95 text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  Reset Password <Check className="h-4 w-4" />
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

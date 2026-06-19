@@ -49,6 +49,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const initialTheme = storedTheme || 'light';
     setTheme(initialTheme);
     document.documentElement.classList.toggle('dark', initialTheme === 'dark');
+
+    const handleProfileUpdate = () => {
+      const updated = authHelper.getCurrentSession();
+      if (updated) {
+        setSession(updated);
+      }
+    };
+    window.addEventListener('profile-update', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('profile-update', handleProfileUpdate);
+    };
   }, [router]);
 
   // Ctrl+K search shortcut
@@ -100,17 +111,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // ─── Menu Items ──────────────────────────────────────────────
   const mainMenuItems = [
     { name: 'Overview', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Connections', path: '/dashboard/clients', icon: Users },
-    { name: 'Pipeline', path: '/dashboard/leads', icon: GitPullRequest },
-    { name: 'Finance', path: '/dashboard/finance', icon: Wallet },
-    { name: 'Team', path: '/dashboard/team', icon: UserCircle },
+    ...(session.role === 'founder' ? [
+      { name: 'Connections', path: '/dashboard/clients', icon: Users },
+      { name: 'Pipeline', path: '/dashboard/leads', icon: GitPullRequest },
+    ] : []),
+    ...(session.role === 'founder' || session.role === 'client' ? [
+      { name: 'Finance', path: '/dashboard/finance', icon: Wallet },
+    ] : []),
+    ...(session.role === 'founder' || session.role === 'employee' ? [
+      { name: 'Team', path: '/dashboard/team', icon: UserCircle },
+    ] : []),
     { name: 'Calendar', path: '/dashboard/meetings', icon: Calendar },
   ];
 
-  const toolMenuItems = [
+  const toolMenuItems = session.role === 'founder' ? [
     { name: 'Insights AI', path: '/dashboard/ai', icon: Sparkles },
     { name: 'Reports', path: '/dashboard/reports', icon: BarChart3 },
-  ];
+  ] : [];
 
   const bottomMenuItems = [
     { name: 'Settings', path: '/dashboard/settings', icon: Settings },
@@ -162,20 +179,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         {/* Brand */}
         <div style={{ padding: isCollapsed ? '16px 0' : '16px 20px', display: 'flex', alignItems: 'center', gap: 12, justifyContent: isCollapsed ? 'center' : 'flex-start', height: 64 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'white', fontWeight: 900, fontSize: 15,
-            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-            flexShrink: 0,
-          }}>
-            B
-          </div>
+          <img 
+            src="/bb24-logo.png" 
+            alt="BB24 Logo" 
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              objectFit: 'contain',
+              flexShrink: 0,
+            }}
+          />
           {!isCollapsed && (
             <div style={{ overflow: 'hidden' }}>
               <p style={{ fontWeight: 800, fontSize: 14, color: '#f1f5f9', lineHeight: 1.2 }}>BB24</p>
-              <p style={{ fontSize: 10, color: '#475569', fontWeight: 500 }}>Business OS</p>
+              <p style={{ fontSize: 10, color: '#64748b', fontWeight: 500 }}>Business OS</p>
             </div>
           )}
         </div>
@@ -267,7 +285,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               color: 'white', fontSize: 12, fontWeight: 800, flexShrink: 0,
               position: 'relative',
             }}>
-              N
+              {session.firstName ? session.firstName[0].toUpperCase() : 'N'}
               {/* Green online dot */}
               <span style={{
                 position: 'absolute', bottom: -1, right: -1,
@@ -278,8 +296,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {!isCollapsed && (
               <>
                 <div style={{ textAlign: 'left', minWidth: 0, flex: 1 }}>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Neha Sharma</p>
-                  <p style={{ fontSize: 10, color: '#64748b', fontWeight: 500 }}>Admin</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {session.firstName} {session.lastName}
+                  </p>
+                  <p style={{ fontSize: 10, color: '#64748b', fontWeight: 500, textTransform: 'capitalize' }}>{session.role === 'founder' ? 'Admin' : session.role}</p>
                 </div>
                 <MoreVertical style={{ width: 14, height: 14, color: '#64748b', flexShrink: 0 }} />
               </>
@@ -498,14 +518,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </button>
 
             {/* Profile avatar in header */}
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontSize: 12, fontWeight: 800, cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
-            }}>
-              NS
+            <div 
+              onClick={() => router.push('/dashboard/settings')}
+              style={{
+                width: 32, height: 32, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', fontSize: 12, fontWeight: 800, cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
+              }}
+            >
+              {session.firstName ? session.firstName[0].toUpperCase() : ''}{session.lastName ? session.lastName[0].toUpperCase() : ''}
             </div>
           </div>
         </header>

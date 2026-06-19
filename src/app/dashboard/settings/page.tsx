@@ -16,12 +16,19 @@ export default function SettingsPage() {
   const [theme, setTheme] = useState<'light' | 'dark' | 'auto'>('light');
   const [saved, setSaved] = useState(false);
 
-  // Profile fields
   const [firstName, setFirstName] = useState('Neha');
   const [lastName, setLastName] = useState('Sharma');
   const [email, setEmail] = useState('ceo.bb24.agency@gmail.com');
   const [phone, setPhone] = useState('+91 98765 43210');
   const [role, setRole] = useState('Admin');
+
+  // Change Password States
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordSaved, setPasswordSaved] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Org fields
   const [orgName, setOrgName] = useState('BB24 Agency');
@@ -37,11 +44,74 @@ export default function SettingsPage() {
   useEffect(() => {
     const stored = localStorage.getItem('theme') as 'light' | 'dark' | null;
     if (stored) setTheme(stored);
+
+    const session = authHelper.getCurrentSession();
+    if (session) {
+      setFirstName(session.firstName || 'Neha');
+      setLastName(session.lastName || 'Sharma');
+      setEmail(session.email || 'ceo.bb24.agency@gmail.com');
+      setPhone(session.phone || '+91 98765 43210');
+      setRole(session.role ? session.role.charAt(0).toUpperCase() + session.role.slice(1) : 'Admin');
+      setOrgName(session.organizationName || 'BB24 Agency');
+    }
   }, []);
 
   const handleSave = () => {
+    authHelper.updateProfile({
+      firstName,
+      lastName,
+      email,
+      phone,
+      organizationName: orgName,
+    });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+    window.dispatchEvent(new Event('profile-update'));
+  };
+
+  const handleChangePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+    const session = authHelper.getCurrentSession();
+    if (!session) return;
+    
+    const userBaseStr = localStorage.getItem('bb24_user_base');
+    if (!userBaseStr) return;
+    const userBase = JSON.parse(userBaseStr);
+    const matchedIdx = userBase.findIndex((u: any) => u.email.toLowerCase() === session.email.toLowerCase());
+    
+    if (matchedIdx === -1) {
+      setPasswordError('User not found in local workspace.');
+      return;
+    }
+    
+    if (userBase[matchedIdx].password !== oldPassword) {
+      setPasswordError('Old password does not match.');
+      return;
+    }
+    
+    if (newPassword.length < 4) {
+      setPasswordError('Password must be at least 4 characters.');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Passwords do not match.');
+      return;
+    }
+    
+    // Save new password
+    userBase[matchedIdx].password = newPassword;
+    localStorage.setItem('bb24_user_base', JSON.stringify(userBase));
+    
+    setPasswordSaved(true);
+    setOldPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setTimeout(() => {
+      setPasswordSaved(false);
+      setIsChangingPassword(false);
+    }, 2000);
   };
 
   const handleThemeChange = (t: 'light' | 'dark' | 'auto') => {
@@ -139,10 +209,10 @@ export default function SettingsPage() {
                   background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: 'white', fontSize: 22, fontWeight: 800,
-                }}>NS</div>
+                }}>{firstName ? firstName[0].toUpperCase() : ''}{lastName ? lastName[0].toUpperCase() : ''}</div>
                 <div>
-                  <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Neha Sharma</p>
-                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Admin • BB24 Agency</p>
+                  <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{firstName} {lastName}</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{role} • {orgName}</p>
                 </div>
               </div>
 
@@ -261,36 +331,71 @@ export default function SettingsPage() {
 
           {activeTab === 'security' && (
             <div>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Security</h2>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 24 }}>Protect your account</p>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>Security Settings</h2>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 24 }}>Protect your workspace account</p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {[
-                  { label: 'Change Password', desc: 'Update your login credentials', icon: Lock },
-                  { label: 'Two-Factor Authentication', desc: 'Add extra security to your account', icon: Shield },
-                  { label: 'API Keys', desc: 'Manage integration keys', icon: Key },
-                ].map((item, idx) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={item.label} style={{
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      padding: '16px 0', cursor: 'pointer',
-                      borderBottom: idx < 2 ? '1px solid var(--border-secondary)' : 'none',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Icon style={{ width: 16, height: 16, color: 'var(--text-secondary)' }} />
+              {!isChangingPassword ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {[
+                    { label: 'Change Password', desc: 'Update your login credentials', icon: Lock, action: () => setIsChangingPassword(true) },
+                    { label: 'Two-Factor Authentication', desc: 'Add extra security to your account', icon: Shield },
+                    { label: 'API Keys', desc: 'Manage integration keys', icon: Key },
+                  ].map((item, idx) => {
+                    const Icon = item.icon;
+                    return (
+                      <div 
+                        key={item.label} 
+                        onClick={item.action}
+                        style={{
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                          padding: '16px 0', cursor: item.action ? 'pointer' : 'default',
+                          borderBottom: idx < 2 ? '1px solid var(--border-secondary)' : 'none',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Icon style={{ width: 16, height: 16, color: 'var(--text-secondary)' }} />
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.label}</p>
+                            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{item.desc}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.label}</p>
-                          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{item.desc}</p>
-                        </div>
+                        {item.action && <ChevronRight style={{ width: 16, height: 16, color: 'var(--text-muted)' }} />}
                       </div>
-                      <ChevronRight style={{ width: 16, height: 16, color: 'var(--text-muted)' }} />
+                    );
+                  })}
+                </div>
+              ) : (
+                <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 400 }} className="animate-scale-in">
+                  {passwordError && (
+                    <div style={{ padding: 10, background: 'var(--danger-light)', border: '1px solid var(--danger-border)', borderRadius: 8, fontSize: 12, color: 'var(--danger)', fontWeight: 600, textAlign: 'center' }}>
+                      {passwordError}
                     </div>
-                  );
-                })}
-              </div>
+                  )}
+                  {passwordSaved && (
+                    <div style={{ padding: 10, background: 'var(--success-light)', border: '1px solid var(--success-border)', borderRadius: 8, fontSize: 12, color: 'var(--success)', fontWeight: 600, textAlign: 'center' }}>
+                      Password Updated Successfully!
+                    </div>
+                  )}
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Old Password</label>
+                    <input type="password" required className="input-field" value={oldPassword} onChange={e => setOldPassword(e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>New Password</label>
+                    <input type="password" required className="input-field" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Confirm New Password</label>
+                    <input type="password" required className="input-field" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                    <button type="button" onClick={() => setIsChangingPassword(false)} className="btn btn-secondary" style={{ flex: 1 }}>Cancel</button>
+                    <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Update Password</button>
+                  </div>
+                </form>
+              )}
             </div>
           )}
 

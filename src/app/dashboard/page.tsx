@@ -128,6 +128,17 @@ export default function CEODashboard() {
   const [expenses, setExpenses] = useState<MockExpense[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const handleToggleTaskStatus = async (task: MockTask) => {
+    const nextStatus = task.status === 'done' ? 'in_progress' as const : 'done' as const;
+    const updatedTask = { ...task, status: nextStatus };
+    
+    // Update local state
+    setTasks(prev => prev.map(t => t.id === task.id ? updatedTask : t));
+    
+    // Save to dataService
+    await dataService.saveTask(updatedTask);
+  };
+
   useEffect(() => {
     const active = authHelper.getCurrentSession();
     if (!active) { router.push('/login'); return; }
@@ -191,7 +202,7 @@ export default function CEODashboard() {
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
           <div>
             <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-              Good morning, Neha! 👋
+              Good morning, {session.firstName}! 👋
             </h1>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4, fontWeight: 500 }}>
               Here&apos;s your business at a glance. {overdueInvoices.length > 0 && (
@@ -664,20 +675,41 @@ export default function CEODashboard() {
         </div>
         <SectionCard title="My Tasks">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {myTasks.map(task => (
-              <div key={task.id} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '10px 14px', borderRadius: 10, border: '1px solid var(--border-primary)',
-              }}>
-                <div>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{task.title}</p>
-                  <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>{task.projectName}</p>
+            {myTasks.map(task => {
+              const isCompleted = task.status === 'done';
+              return (
+                <div key={task.id} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '10px 14px', borderRadius: 10, border: '1px solid var(--border-primary)',
+                  background: isCompleted ? 'var(--bg-tertiary)/30' : 'transparent',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+                    <input
+                      type="checkbox"
+                      checked={isCompleted}
+                      onChange={() => handleToggleTaskStatus(task)}
+                      style={{
+                        width: 16, height: 16, borderRadius: 4,
+                        border: '1.5px solid var(--border-primary)',
+                        cursor: 'pointer', accentColor: 'var(--accent)',
+                      }}
+                    />
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ 
+                        fontSize: 12, fontWeight: 600, 
+                        color: isCompleted ? 'var(--text-muted)' : 'var(--text-primary)',
+                        textDecoration: isCompleted ? 'line-through' : 'none',
+                        transition: 'all 200ms ease',
+                      }}>{task.title}</p>
+                      <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>{task.projectName}</p>
+                    </div>
+                  </div>
+                  <span className={isCompleted ? 'badge-success' : 'badge-blue'} style={{ fontSize: 10, textTransform: 'capitalize' }}>
+                    {task.status.replace('_', ' ')}
+                  </span>
                 </div>
-                <span className="badge-blue" style={{ fontSize: 10, textTransform: 'capitalize' }}>
-                  {task.status.replace('_', ' ')}
-                </span>
-              </div>
-            ))}
+              );
+            })}
             {myTasks.length === 0 && <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', padding: '20px 0' }}>No tasks assigned.</p>}
           </div>
         </SectionCard>

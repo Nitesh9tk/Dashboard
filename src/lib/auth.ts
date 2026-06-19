@@ -8,6 +8,7 @@ export interface UserSession {
   lastName: string;
   organizationName: string;
   isDemo: boolean;
+  phone?: string;
 }
 
 const SESSION_KEY = 'bb24_user_session';
@@ -22,47 +23,64 @@ export const authHelper = {
   // Log in using Email & Password (or Demo fallback)
   async signIn(email: string, password?: string, isDemoLogin = false): Promise<{ success: boolean; error?: string; session?: UserSession }> {
     if (isDemoLogin || !this.isSupabaseConfigured()) {
-      // Check for dynamically created users in localStorage
-      const userBaseStr = typeof window !== 'undefined' ? localStorage.getItem('bb24_user_base') : null;
-      const userBase = userBaseStr ? JSON.parse(userBaseStr) : [];
-      
-      const loginEmail = email ? email.toLowerCase() : 'ceo@bb24.agency';
-      const matchedUser = userBase.find((u: any) => u.email.toLowerCase() === loginEmail);
+      if (typeof window !== 'undefined') {
+        const userBaseStr = localStorage.getItem('bb24_user_base');
+        let userBase = userBaseStr ? JSON.parse(userBaseStr) : [];
 
-      let role = 'founder';
-      let firstName = 'Dev';
-      let lastName = 'Founder';
-
-      if (matchedUser) {
-        role = matchedUser.role;
-        const nameParts = matchedUser.name ? matchedUser.name.split(' ') : ['User', 'Member'];
-        firstName = nameParts[0] || 'User';
-        lastName = nameParts.slice(1).join(' ') || 'Member';
-      } else {
-        // Fallback checks
-        if (loginEmail.includes('client')) {
-          role = 'client';
-          firstName = 'Sophia';
-          lastName = 'Moretti';
-        } else if (loginEmail.includes('employee') || loginEmail.includes('team') || loginEmail.includes('staff')) {
-          role = 'employee';
-          firstName = 'Elena';
-          lastName = 'Rostova';
+        if (userBase.length === 0) {
+          // Seed initial user base
+          userBase = [
+            { email: 'ceo@bb24.agency', password: 'admin', role: 'founder', name: 'Nitesh Sharma', phone: '+91 98765 43210' },
+            { email: 'ceo.bb24.agency@gmail.com', password: 'admin', role: 'founder', name: 'Nitesh Sharma', phone: '+91 98765 43210' },
+            // Employees
+            { email: 'divyansh@bb24.agency', password: 'password', role: 'employee', name: 'Divyansh' },
+            { email: 'govind@bb24.agency', password: 'password', role: 'employee', name: 'Govind' },
+            { email: 'kavya@bb24.agency', password: 'password', role: 'employee', name: 'Kavya' },
+            { email: 'amit@bb24.agency', password: 'password', role: 'employee', name: 'Amit' },
+            { email: 'nitin@bb24.agency', password: 'password', role: 'employee', name: 'Nitin' },
+            // Clients
+            { email: 'gsayurveda@email.com', password: 'password', role: 'client', name: 'GS Ayurveda Team' },
+            { email: 'ashvastra@email.com', password: 'password', role: 'client', name: 'Ashvastra Team' },
+            { email: 'chillqubig@email.com', password: 'password', role: 'client', name: 'Chillqubig Team' },
+            { email: 'oncoadvisor@email.com', password: 'password', role: 'client', name: 'OncoAdvisor Team' },
+            { email: 'spevents@email.com', password: 'password', role: 'client', name: 'SP Events Team' },
+            { email: 'wellavitta@email.com', password: 'password', role: 'client', name: 'WellaVitta Team' },
+          ];
+          localStorage.setItem('bb24_user_base', JSON.stringify(userBase));
         }
-      }
 
-      // Create a mock user session for sandbox evaluation
-      const mockSession: UserSession = {
-        id: 'demo-user-uuid-1234',
-        email: loginEmail,
-        role: role,
-        firstName: firstName,
-        lastName: lastName,
-        organizationName: 'Alpha Digital Agency',
-        isDemo: true,
-      };
-      localStorage.setItem(SESSION_KEY, JSON.stringify(mockSession));
-      return { success: true, session: mockSession };
+        const loginEmail = email ? email.toLowerCase().trim() : '';
+        const matchedUser = userBase.find((u: any) => u.email.toLowerCase() === loginEmail);
+
+        if (!matchedUser) {
+          return { success: false, error: 'User not found in local workspace base' };
+        }
+
+        // Verify password
+        const cleanPassword = password || '';
+        if (matchedUser.password !== cleanPassword) {
+          return { success: false, error: 'Invalid password' };
+        }
+
+        const nameParts = matchedUser.name ? matchedUser.name.split(' ') : ['User', 'Member'];
+        const firstName = nameParts[0] || 'User';
+        const lastName = nameParts.slice(1).join(' ') || 'Member';
+
+        // Create a mock user session for sandbox evaluation
+        const mockSession: UserSession = {
+          id: matchedUser.id || 'demo-user-' + matchedUser.email,
+          email: matchedUser.email,
+          role: matchedUser.role,
+          firstName: firstName,
+          lastName: lastName,
+          organizationName: matchedUser.role === 'client' ? matchedUser.name : 'BB24 Agency',
+          phone: matchedUser.phone || '',
+          isDemo: true,
+        };
+        localStorage.setItem(SESSION_KEY, JSON.stringify(mockSession));
+        return { success: true, session: mockSession };
+      }
+      return { success: false, error: 'Window context not available' };
     }
 
     try {
@@ -139,6 +157,40 @@ export const authHelper = {
       return JSON.parse(sessionStr);
     } catch {
       return null;
+    }
+  },
+
+  // Update profile updates
+  updateProfile(updates: Partial<UserSession>): void {
+    if (typeof window === 'undefined') return;
+    const sessionStr = localStorage.getItem(SESSION_KEY);
+    if (!sessionStr) return;
+    try {
+      const session = JSON.parse(sessionStr);
+      const updatedSession = { ...session, ...updates };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(updatedSession));
+      
+      // Update credentials user base
+      const userBaseStr = localStorage.getItem('bb24_user_base');
+      if (userBaseStr) {
+        const userBase = JSON.parse(userBaseStr);
+        const index = userBase.findIndex((u: any) => u.email.toLowerCase() === session.email.toLowerCase());
+        if (index !== -1) {
+          const matchedUser = userBase[index];
+          if (updates.firstName || updates.lastName) {
+            matchedUser.name = `${updates.firstName || session.firstName} ${updates.lastName || session.lastName}`.trim();
+          }
+          if (updates.email) {
+            matchedUser.email = updates.email;
+          }
+          if (updates.phone) {
+            matchedUser.phone = updates.phone;
+          }
+          localStorage.setItem('bb24_user_base', JSON.stringify(userBase));
+        }
+      }
+    } catch (e) {
+      console.error('Failed to update profile', e);
     }
   }
 };

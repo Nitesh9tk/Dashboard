@@ -14,7 +14,7 @@ const SKILL_MAP: Record<string, string[]> = {
   'Elena Rostova': ['Copywriting', 'SEO Ads', 'LinkedIn B2B', 'Analytics'],
   'Siddharth Malhotra': ['Accounting', 'Audit', 'Taxation', 'Tally Prime'],
   'Ananya Iyer': ['UI UX Design', 'Figma', 'Prototyping', 'React'],
-  'Neha Sharma': ['Strategic Planning', 'Leadership', 'Sales Closing', 'Finance'],
+  'Nitesh Sharma': ['Strategic Planning', 'Leadership', 'Sales Closing', 'Finance'],
   'Sanjay Singh': ['Prospect Outreach', 'Email Campaigning', 'Sales Closing'],
 };
 
@@ -195,13 +195,15 @@ export default function TeamHub() {
           <h1 className="text-3xl font-extrabold tracking-tight text-text-primary">Team Management</h1>
           <p className="text-text-secondary text-sm mt-1">Oversee employee directories, organizational structures, workloads, and leave policies.</p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-primary text-white hover:opacity-90 text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer animate-pulse-soft"
-        >
-          <Plus className="h-4 w-4" />
-          Add Team Member
-        </button>
+        {session?.role === 'founder' && (
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-primary text-white hover:opacity-90 text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer animate-pulse-soft"
+          >
+            <Plus className="h-4 w-4" />
+            Add Team Member
+          </button>
+        )}
       </div>
 
       {/* Tabs */}
@@ -402,7 +404,9 @@ export default function TeamHub() {
             <div className="flex flex-col items-center">
               <div className="p-4 bg-brand-primary/10 border-2 border-brand-primary rounded-xl text-center shadow-sm w-44">
                 <p className="font-extrabold text-xs text-brand-primary uppercase tracking-wider">CEO & Founder</p>
-                <h4 className="font-bold text-sm text-text-primary mt-1">Neha Sharma</h4>
+                <h4 className="font-bold text-sm text-text-primary mt-1">
+                  {session ? `${session.firstName} ${session.lastName}` : 'Nitesh Sharma'}
+                </h4>
                 <p className="text-[9px] text-text-secondary mt-0.5">Management</p>
               </div>
             </div>
@@ -470,7 +474,7 @@ export default function TeamHub() {
                       </span>
                       
                       {/* Approve/Reject Controls (Only CEO/Admin can see or use in this flow) */}
-                      {l.status === 'pending' && (
+                      {l.status === 'pending' && session?.role === 'founder' && (
                         <div className="flex gap-1.5">
                           <button
                             onClick={() => handleApproveLeave(l.id, true)}
